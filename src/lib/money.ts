@@ -16,14 +16,6 @@ export function toMinor(amount: string): bigint {
   return negative ? -value : value;
 }
 
-/** 9401876462n → "94018764.62" */
-export function fromMinor(minor: bigint): string {
-  const negative = minor < 0n;
-  const abs = negative ? -minor : minor;
-  const whole = abs / 100n;
-  const cents = (abs % 100n).toString().padStart(2, '0');
-  return `${negative ? '-' : ''}${whole}.${cents}`;
-}
 
 const tryLira = new Intl.NumberFormat('tr-TR', {
   style: 'currency',

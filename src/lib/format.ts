@@ -20,12 +20,5 @@ export function breakdownSeconds(total: number) {
   };
 }
 
-/** Kısa geri sayım metni: "2g 14s 22dk" */
-export function formatCountdown(total: number): string {
-  const { days, hours, minutes, seconds } = breakdownSeconds(total);
-  if (days > 0) return `${days}g ${hours}s ${minutes}dk`;
-  if (hours > 0) return `${hours}s ${minutes}dk ${seconds}sn`;
-  return `${minutes}dk ${seconds}sn`;
-}
 
 export const pad2 = (n: number) => String(n).padStart(2, '0');

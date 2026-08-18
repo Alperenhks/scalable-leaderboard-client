@@ -73,7 +73,7 @@ async function request<T>(path: string, opts: RequestOptions = {}): Promise<T> {
 
   if (shareKey) {
     inflight.set(shareKey, run);
-    // Sonuç ne olursa olsun kaydı temizle; sonraki polling turu taze çeksin.
+    // Sonuç ne olursa olsun kaydı temizle; sonraki tazeleme taze çeksin.
     void run.catch(() => {}).finally(() => inflight.delete(shareKey));
   }
   return run;

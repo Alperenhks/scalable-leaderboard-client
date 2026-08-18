@@ -56,7 +56,8 @@ function LeaderboardRowBase({ entry, isCurrentUser = false, estimatedPrize }: Pr
 }
 
 /**
- * Polling her 15-30 sn'de listeyi tazeliyor; sıra değişmediğinde
- * satırların yeniden çizilmemesi için memo'lu.
+ * `memo`'lu: tablo tazelendiğinde (yenile düğmesi, persona değişimi, skor
+ * gönderimi) 100 satırın tamamı yeni prop alır ama çoğunun içeriği aynıdır;
+ * memo sırası ve skoru değişmeyen satırların yeniden çizilmesini önler.
  */
 export const LeaderboardRow = memo(LeaderboardRowBase);
