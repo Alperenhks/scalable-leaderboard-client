@@ -21,7 +21,6 @@ export function CountryTag({ country, className }: Props) {
 
   return (
     <img
-      // 2x için srcSet — retina ekranda bulanıklaşmasın
       src={`https://flagcdn.com/w20/${code}.png`}
       srcSet={`https://flagcdn.com/w40/${code}.png 2x`}
       width={18}

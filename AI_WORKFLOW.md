@@ -173,7 +173,7 @@ sordu. Belge, ölçüm tekrarlandıktan sonra düzeltildi.
 
 ### Ödül matematiğinin istemcide tutulmaması
 
-Araç başlangıçta ödül paylarını istemcide hesaplıyordu: ilk üç sıra sabit oran, 4–100 arası skora orantılı, tamamı `bigint` kuruş üzerinden. Hesap doğruydu — sunucunun `projection` ucuyla karşılaştırıldığında 100 kayıtta en büyük fark **48 kuruştu.**
+Ödül payları başlangıçta istemcide hesaplanıyordu: ilk üç sıra sabit oran, 4–100 arası o dönemki kurala göre skora orantılı (kural sonradan sıraya orantılıya çevrildi), tamamı `bigint` kuruş üzerinden. Hesap doğruydu — sunucunun `projection` ucuyla karşılaştırıldığında 100 kayıtta en büyük fark **48 kuruştu.**
 
 Geliştirici `GET /rewards/projection` ucunu gösterdi. Doğruluk farkı ihmal edilebilir olmasına rağmen istemci hesabı **tamamen silindi**, çünkü mesele doğruluk değildi: **gösterilen tutar ile ödenecek tutarın aynı kaynaktan gelmesi.** İki bağımsız hesap, ileride birbirinden ayrışacak iki hesap demektir.
 

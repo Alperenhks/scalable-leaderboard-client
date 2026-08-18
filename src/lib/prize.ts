@@ -11,7 +11,6 @@ import { toMinor } from './money';
 export interface PrizeTable {
   /** userId → kuruş cinsinden tahmini ödül */
   byUserId: Map<string, bigint>;
-  /** Ödül alan son sıra */
   rewardedCount: number;
 }
 

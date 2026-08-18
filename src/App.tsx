@@ -76,7 +76,6 @@ export default function App() {
     { enabled: ready },
   );
 
-  // Ödül tablosu: sunucu tutarlarını userId ile eşleştirir.
   const prizes = useMemo(() => buildPrizeTable(projection.data), [projection.data]);
 
   // Ülke sıralaması sunucudan gelir: sıra numaraları ülke içinde 1'den başlar,
@@ -115,7 +114,6 @@ export default function App() {
 
   const handleSwitch = useCallback((next: DemoMode) => void switchTo(next), [switchTo]);
 
-  // İlk skor gönderimi — sıralamada olmayan oyuncu için.
   const handleSubmitScore = useCallback(async () => {
     setSubmitting(true);
     try {

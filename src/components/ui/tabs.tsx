@@ -35,7 +35,6 @@ export function TabsTrigger({
         'inline-flex min-h-11 flex-1 items-center justify-center gap-1.5 rounded-full px-2 py-2 sm:px-3',
         'text-[12px] font-extrabold uppercase tracking-wide text-cocoa/60 transition-all',
         'hover:text-cocoa',
-        // Etkin sekme kabartma sarı düğme olur
         'data-[state=active]:border-[3px] data-[state=active]:border-bark',
         'data-[state=active]:bg-gradient-to-b data-[state=active]:from-gold-1 data-[state=active]:to-gold-2',
         'data-[state=active]:text-cocoa data-[state=active]:shadow-[inset_0_2px_0_rgb(255_255_255/0.7),0_3px_0_rgb(0_0_0/0.25)]',

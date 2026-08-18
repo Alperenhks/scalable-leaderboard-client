@@ -3,7 +3,6 @@ import { cn } from '@/lib/utils';
 
 interface Props {
   score: number;
-  /** Tam sayıyı göster (vurgulu yerlerde). */
   full?: boolean;
   className?: string;
 }

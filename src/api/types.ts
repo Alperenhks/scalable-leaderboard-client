@@ -1,9 +1,22 @@
-/** Backend sözleşmesi — https://scalable-leaderboard-engine.onrender.com/api */
+/**
+ * Backend sözleşmesi — https://scalable-leaderboard-engine.onrender.com/api
+ *
+ * Sözleşmenin üç kuralı; aşağıdaki tipler bunlara göre okunmalı:
+ *
+ *   1. `MoneyString` alanları DAİMA string gelir. `Number`'a çevirme —
+ *      aritmetik için `lib/money` (bigint kuruş) kullan.
+ *   2. `rank: number | null` — `null` "sıralamada değil" demektir ve `0`
+ *      DEĞİLDİR; `0` birincilik anlamına gelirdi.
+ *   3. Ülke filtresi uygulanmış yanıtlarda sıra numaraları ülke içinde
+ *      1'den başlar, global sıra değildir.
+ *
+ * Yalnızca bu kurallardan sapan ya da tuzak barındıran alanlarda ayrıca not
+ * vardır; geri kalanı adından okunur.
+ */
 
-/** Para alanları DAİMA string gelir. Aritmetik için `lib/money` kullan. */
 export type MoneyString = string;
 
-/** ISO 3166-1 alpha-2. Backend null dönebilir. */
+/** ISO 3166-1 alpha-2; backend null dönebilir. */
 export type CountryCode = string | null;
 
 export interface LeaderboardEntry {
@@ -18,25 +31,18 @@ export interface LeaderboardEntry {
 
 export interface LeaderboardResponse {
   seasonId: string;
-  /** Ülke filtresi uygulandıysa ISO kodu, global sorguda null. */
   country: CountryCode;
   /** Filtre varsa o ülkedeki toplam oyuncu, yoksa genel toplam. */
   total: number;
   limit: number;
   offset: number;
-  /** Ülke filtresinde sıra numaraları ülke içinde 1'den başlar. */
   entries: LeaderboardEntry[];
 }
 
 export interface AroundResponse {
   seasonId: string;
-  /** Ülke filtresi uygulandıysa ISO kodu, global sorguda null. */
   country: CountryCode;
   userId: string;
-  /**
-   * Oyuncu hiç oynamamışsa null — bu `0` DEĞİLDİR.
-   * Ülke filtresinde bu sıra ülke içindedir (global sıra değil).
-   */
   rank: number | null;
   score: number;
   total: number;
@@ -62,7 +68,7 @@ export interface SeasonResponse {
   isCurrentSeason: boolean;
   startsAt: string;
   endsAt: string;
-  /** Bir kez alınır, geri sayım istemcide yürür. */
+  /** Bir kez alınır, geri sayım istemcide yürür — saniyede istek atılmaz. */
   secondsRemaining: number;
   serverTime: string;
   poolAmount: MoneyString;
@@ -102,7 +108,6 @@ export interface MeRewardsResponse {
   rewards: RewardHistoryItem[];
 }
 
-/** Jüri için hazır demo personaları. */
 export type DemoMode = 'top' | 'contender' | 'mid' | 'outside' | 'unranked';
 
 export interface IdentifyResponse {
@@ -118,7 +123,6 @@ export interface IdentifyResponse {
 export interface ProjectionEntry {
   rank: number;
   userId: string;
-  /** Kuruş hassasiyetinde string — Number'a çevirme. */
   amount: MoneyString;
 }
 
@@ -126,7 +130,6 @@ export interface ProjectionMe {
   rank: number | null;
   score: number;
   amount: MoneyString;
-  /** Ödül bölgesinde mi? */
   isEligible: boolean;
   /** Ödül bölgesine girmek için gereken puan; zaten içerideyse null. */
   pointsToEligible: number | null;

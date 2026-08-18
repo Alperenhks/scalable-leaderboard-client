@@ -5,7 +5,6 @@ export function formatScore(n: number): string {
   return String(n);
 }
 
-/** Tam skor, binlik ayraçlı: 4526619 → "4.526.619" */
 export const formatScoreFull = (n: number): string =>
   new Intl.NumberFormat('tr-TR').format(n);
 

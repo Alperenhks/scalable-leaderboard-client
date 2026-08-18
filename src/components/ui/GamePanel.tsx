@@ -2,12 +2,9 @@ import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 
 interface Props {
-  /** Kurdele üzerinde yazan başlık. */
   title: string;
-  /** Başlığın solunda duran tema simgesi (dekoratif). */
   icon?: string;
   children: ReactNode;
-  /** Panelin altına sabitlenen eylem alanı (düğmeler). */
   footer?: ReactNode;
   className?: string;
 }

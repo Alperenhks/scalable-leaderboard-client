@@ -29,7 +29,6 @@ export function SeasonHeader({ season }: Props) {
   }
 
   const { days, hours, minutes, seconds } = breakdownSeconds(remaining);
-  // Son 24 saatte renk değişir — aciliyet hissi.
   const urgent = remaining <= DAY;
 
   return (
