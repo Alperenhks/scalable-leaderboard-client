@@ -4,7 +4,13 @@ Haftalık liderlik tablosu istemcisi. Idle/clicker havalimanı oyunu için
 tasarlandı: oyuncu kendi sırasını kaydırmadan görür, ödül havuzunu ve sezon
 geri sayımını takip eder.
 
+**▶ Canlı uygulama:** https://scalable-leaderboard-client.vercel.app
+
 **Canlı API:** `https://scalable-leaderboard-engine.onrender.com/api`
+**Backend deposu:** https://github.com/Alperenhks/scalable-leaderboard-engine
+
+> İstemci ve sunucu ayrı depolarda ve ayrı dağıtılır (Vercel / Render); bu
+> depo yalnızca istemciyi barındırır.
 
 ## Kurulum
 
