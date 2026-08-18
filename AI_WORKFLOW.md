@@ -228,10 +228,17 @@ Aynı şekilde `neighbours`, `projection` ve `flagcdn` uçlarının varlığı, 
 | `fcd343a` | `strict` hiçbir tsconfig'de tanımlı değildi — Vite şablonunun varsayılanı düşürülmüştü. Kod katı ayarlarla sıfır hata verdiği doğrulanıp açıldı; bedeli olmayan bir kazanç. Aynı commit'te canlı uygulama adresi README'ye eklendi: dağıtım çalışıyordu ama belgede tıklanabilir bir link yoktu, yani karşılanmış bir kriter görünmüyordu. |
 | `2066dcd` | Sekme dokunma hedefi ~28px'ti; WCAG 2.5.5 asgari 44px öneriyor. Case uygulamanın mobilde test edileceğini söylediği için doğrudan ilgiliydi. |
 | `129b3f3` | `LeaderboardRow`'daki `memo` yorumu "polling her 15-30 sn'de tazeliyor" diyordu ama polling kaldırılmıştı. Karar doğruydu, gerekçesi yanlış yazılmıştı. İki ölü export da kaldırıldı. |
+| `2ad0370` | **Mobil taşma ve palet.** Aşağıda ayrıntılı. |
+| `8ea4c88` | Sezon ve ödül havuzu iki büyük levha halindeydi, ekranın üst üçte birini kaplıyordu; asıl içerik olan tablo katlamanın altına düşüyordu. Tek kompakt şeride indirildi — panel 190px'te başlıyor, ilk ekranda 5 satır görünüyor. Aynı turda havacılık kimliği görünür kılındı: panel kurdelelerinde tema simgeleri, kanatlarda gökyüzü mavisi, üst kenarda pist şeridi. |
+| `5287769` | Yenile düğmesi kaldırıldı. Veri zaten üç durumda tazeleniyordu (persona değişimi, skor gönderimi, açılış); elle tazeleme gerektiren bir akış yoktu. Header sadeleşti, görünen satır sayısı 5'ten 7'ye çıktı. |
+| `8d5a03b` | *"TR sıralamasında 3. sıradasın"* ifadesindeki iki harfli kod, oyuncunun kendi ülkesi dışındaki kodları tanımasını gerektiriyordu. `Intl.DisplayNames` ile ada çevrildi (CA → Kanada). Elle 250 satırlık bir eşleme listesi tutmak yerine tarayıcının kendi tablosu kullanıldı. |
+| `5f0a120` | `types.ts` aynı üç kuralı (para string gelir, `rank: null ≠ 0`, ülke filtresinde sıra ülke içinde başlar) altı ayrı alanda tekrar tekrar anlatıyordu. Kurallar dosya başındaki tek okuma kılavuzuna taşındı; alan bazlı not yalnızca kuraldan sapan yerlerde bırakıldı. |
 
 ### Mobil taşmanın kovalanması
 
 Dar ekranda sayfanın sağa kaydığı bildirildi. İlk bakışta satır yapısı doğru görünüyordu: `min-w-0 flex-1 truncate` zinciri kuruluydu, sabit genişlik yoktu.
+
+İlk düzeltme denemeleri yetersiz kaldı ve her seferinde ekran görüntüsüyle geri bildirim geldi — *"hâlâ kayıyor"*, *"veri gelince oluyor"*. Bu iki ipucu belirleyiciydi: sorun boş ekranda görünmüyordu, yani statik düzende değil **içerik yerleştiğinde** oluşuyordu.
 
 Ölçüm sorunu üç katmanda buldu:
 
