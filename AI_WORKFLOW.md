@@ -52,18 +52,18 @@ Yapay zeka bu projede hiçbir zaman tek başına yön belirlemedi. Kod yazmaya b
 
 Bu projenin en belirleyici geri bildirim döngüsü tasarım tarafında yaşandı. Araç arka arkaya **dört ayrı yön** önerdi, geliştirici dördünü de reddetti:
 
-| # | Aracın önerisi | Geliştiricinin tepkisi |
+| # | Aracın önerisi | Reddedilme gerekçesi |
 |---|---|---|
-| 1 | Koyu tema + mor→pembe gradient, emoji rozetler | *"ai slop diye çığlık atıyor"* |
-| 2 | Havalimanı bilgi panosu (FIDS): amber fosfor, dar grotesk | Emoji sorunu çözüldü ama yön tutmadı |
-| 3 | Açık bej "biniş kartı": kağıt dokusu, mürekkep laciverti | *"bu ne ya"* — kırtasiye faturası gibi |
-| 4 | Kokpit koyu arduvaz + tek amber aksan | *"layoutu falan değiştirsene"* |
+| 1 | Koyu tema + mor→pembe gradient, emoji rozetler | Jenerik yapay zeka çıktısı izlenimi veriyor; bir oyun stüdyosunun ürününe yakışmıyor |
+| 2 | Havalimanı bilgi panosu (FIDS): amber fosfor, dar grotesk | Emoji sorunu giderildi, ancak yön bir oyun arayüzü olarak tutmadı |
+| 3 | Açık bej "biniş kartı": kağıt dokusu, mürekkep laciverti | Basılı evrak estetiği; oyun arayüzünden uzak |
+| 4 | Kokpit koyu arduvaz + tek amber aksan | Renk paleti değişti, yerleşim hâlâ kurumsal panel düzeninde |
 
 Beşinci turda geliştirici **referans görsel** verdi: casual mobil oyun arayüzü — ahşap zemin, kurdele başlıklı altın panel, kapsül satırlar, kabartma düğmeler. Nihai tasarım budur.
 
 Buradaki asıl nokta: **görsel yön araç tarafından bulunmadı.** Araç dört kez denedi ve dördü de tutmadı; yönü belirleyen şey geliştiricinin verdiği referanstı. Aracın katkısı, o referansı web'e çevirmek (Tailwind `@theme` token'ları, `perf-l` perfore kenar, `btn3d` basılabilir düğme) oldu — yönü seçmek değil.
 
-Aynı şekilde emoji kullanımı da geliştiricinin kararıdır: *"emoji de kullanma, daha yaratıcı ol"* denilmesi üzerine bayrak emojileri ISO kod rozetine, sonra da geliştiricinin talebiyle gerçek bayrak görsellerine (`flagcdn`) çevrildi.
+Aynı şekilde emoji kullanımı da geliştiricinin kararıdır: emoji rozetlerinin arayüzü ucuzlaştırdığı gerekçesiyle kaldırılması istendi. Bayrak emojileri önce ISO kod rozetine, ardından geliştiricinin talebiyle gerçek bayrak görsellerine (`flagcdn`) çevrildi.
 
 ### Geliştiricinin verdiği diğer kararlar
 
@@ -73,7 +73,7 @@ Aynı şekilde emoji kullanımı da geliştiricinin kararıdır: *"emoji de kull
 | **Avatar nereden gelsin?** | `userId`'den deterministik türet | API avatar döndürmüyor; sahte fotoğraf yerine hash'ten renk + baş harf. Aynı oyuncu hep aynı rozeti alır |
 | **Ülke sekmesi olsun mu?** | Evet, istemci tarafı filtre | Backend'de ülke filtresi yok (`?country=` **400** döner); ilk 100 üzerinde filtreleniyor, kapsam sınırı README'de |
 | **Demo persona sayısı** | Dördü de kalsın | `mid` (#2476) ile `outside` (#121) aynı ekranı farklı derinlikte gösteriyor |
-| **Ağ trafiği ne olsun?** | Polling tamamen kalksın | *"çağırmadığı-tetiklenmediği sürece atma"* — zamanlayıcılar silindi, yerine manuel yenile düğmesi |
+| **Ağ trafiği ne olsun?** | Polling tamamen kalksın | Talep açıktı: istek yalnızca tetiklendiğinde atılmalı. Zamanlayıcılar silindi, yerine manuel yenile düğmesi kondu |
 | **Logo** | Marka logosu kullanılsın | `public/logo.png`; favicon logodan örneklenen `#ef6723` ile yeniden çizildi |
 
 Bu kararların hiçbiri araç tarafından varsayılmadı.
@@ -82,7 +82,7 @@ Bu kararların hiçbiri araç tarafından varsayılmadı.
 
 Oturumun başında rehber metni `country` alanının satırlarda bulunduğunu varsayıyordu, ama canlı API'de o alan yoktu ve `?country=TR` **400** dönüyordu. Araç bunu ölçtü ve sessizce bir yol seçmek yerine **geliştiriciye sordu**: bayraklar tamamen çıksın mı, istemcide uydurulsun mu, yoksa sekme yarım mı bırakılsın?
 
-Geliştiricinin cevabı üçünden de farklıydı: *"country is now live, re-fetch — senin verin eski deploy'dan."* Yeniden çekildi, alan gerçekten gelmişti. Yanlış varsayımla ilerlenseydi ya sahte veri üretilecek ya da var olan bir özellik atlanacaktı.
+Geliştiricinin cevabı üç seçenekten de farklı oldu: alan bu sırada backend'e eklenmişti ve elde edilen veri eski dağıtımdandı; yeniden çekilmesi istendi. Çekildiğinde alan gerçekten geliyordu. Yanlış varsayımla ilerlenseydi ya sahte veri üretilecek ya da var olan bir özellik atlanacaktı.
 
 ---
 
@@ -114,7 +114,7 @@ Düzeltildi ve tarayıcıda ölçülerek doğrulandı: 1. sıra → 3 satır, 12
 
 ### 3. Ağ panelindeki "(cancelled)" satırlarının teşhisi
 
-Geliştirici kırmızı satırlar gördü ve *"bir kırmızı response geliyor bu ne"* diye sordu. Araç bunları hata olarak kabul etmek yerine inceledi:
+Geliştirici ağ panelindeki kırmızı satırları fark etti ve bunların ne olduğunu sordu. Araç bunları hata olarak kabul etmek yerine inceledi:
 
 - Satırlarda `(cancelled)` yazıyordu, `failed` değil
 - Hepsi **0.0 kB** idi
@@ -122,7 +122,7 @@ Geliştirici kırmızı satırlar gördü ve *"bir kırmızı response geliyor b
 
 Teşhis: React StrictMode dev'de bileşenleri iki kez mount ediyor, veri hook'unun cleanup'ı ilk turu `abort()` ediyordu. Yani beklenen davranıştı ve üretim derlemesinde hiç oluşmuyordu.
 
-Buna rağmen geliştirici *"o kırmızıları istemiyorum, adamlar performansa çok takılıyor"* dedi. Burada iki yol vardı: StrictMode'u kapatmak (gerçek cleanup hatalarını gizlerdi) ya da isteği tekilleştirmek. **İkincisi seçildi**: `client.ts`'te uçuştaki GET istekleri paylaşılıyor, ikinci mount yeni bağlantı açmıyor. Semptom yerine sebep giderildi ve StrictMode'un koruması korundu.
+Teknik olarak zararsız olmasına rağmen geliştirici bu satırların kalmamasını istedi; gerekçe, değerlendirmede performans göstergelerine dikkat edilmesiydi. Burada iki yol vardı: StrictMode'u kapatmak (gerçek cleanup hatalarını gizlerdi) ya da isteği tekilleştirmek. **İkincisi seçildi**: `client.ts`'te uçuştaki GET istekleri paylaşılıyor, ikinci mount yeni bağlantı açmıyor. Semptom yerine sebep giderildi ve StrictMode'un koruması korundu.
 
 ---
 
