@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
+import { RefreshCw } from 'lucide-react';
 import {
   getAround,
   getLeaderboard,
@@ -20,17 +21,12 @@ import { Button } from '@/components/ui/button';
 import { CountryTag } from '@/components/ui/CountryTag';
 import { GamePanel } from '@/components/ui/GamePanel';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { usePolling } from '@/hooks/usePolling';
+import { useResource } from '@/hooks/useResource';
 import { useSession } from '@/hooks/useSession';
 import { buildPrizeTable } from '@/lib/prize';
+import { cn } from '@/lib/utils';
 
 const TOP_LIMIT = 100;
-
-// Tazeleme sıklıkları: zirve yavaş değişir, kendi sıran daha kritik.
-const POLL_LEADERBOARD = 30_000;
-const POLL_AROUND = 15_000;
-const POLL_SEASON = 60_000;
-const POLL_ME = 15_000;
 
 const tr = new Intl.NumberFormat('tr-TR');
 
@@ -49,38 +45,33 @@ export default function App() {
   // Token değiştiğinde (persona geçişi) yetkili uçlar yeniden çekilir.
   const authDeps = useMemo(() => [epoch], [epoch]);
 
-  const board = usePolling(
+  // Hiçbiri kendi kendine tekrar etmez; tazeleme yalnızca istendiğinde olur.
+  const board = useResource(
     useCallback((signal: AbortSignal) => getLeaderboard(TOP_LIMIT, signal), []),
-    POLL_LEADERBOARD,
   );
-  const season = usePolling(
+  const season = useResource(
     useCallback((signal: AbortSignal) => getSeason(signal), []),
-    POLL_SEASON,
   );
   // Yetkili uçlar: token hazır değilken istek atmak 401 döndürür.
-  const around = usePolling(
+  const around = useResource(
     useCallback((signal: AbortSignal) => getAround(signal), []),
-    POLL_AROUND,
     authDeps,
     { enabled: ready },
   );
-  const me = usePolling(
+  const me = useResource(
     useCallback((signal: AbortSignal) => getMe(signal), []),
-    POLL_ME,
     authDeps,
     { enabled: ready },
   );
   // Ödül tutarlarının tek kaynağı: sunucu. İstemcide yeniden hesaplanmaz.
   // Token varsa `me` alanı da gelir (isEligible, pointsToEligible).
-  const projection = usePolling(
+  const projection = useResource(
     useCallback((signal: AbortSignal) => getProjection(signal), []),
-    POLL_LEADERBOARD,
     authDeps,
     { enabled: ready },
   );
-  const rewards = usePolling(
+  const rewards = useResource(
     useCallback((signal: AbortSignal) => getMyRewards(signal), []),
-    POLL_SEASON,
     authDeps,
     { enabled: ready },
   );
@@ -123,6 +114,9 @@ export default function App() {
   }, [refetchAll]);
 
   const hasRewards = (rewards.data?.count ?? 0) > 0;
+  // Tablo verisi tazeleniyor mu — yenile düğmesi bunu gösterir.
+  const refreshing =
+    board.refreshing || around.refreshing || projection.refreshing || me.refreshing;
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-6 sm:py-8">
@@ -138,7 +132,23 @@ export default function App() {
             className="h-5 w-auto sm:h-6"
           />
         </span>
-        <PlayerSwitcher mode={mode} busy={sessionLoading} onSwitch={handleSwitch} />
+        <div className="flex items-center gap-2">
+          <Button
+            variant="gold"
+            onClick={refetchAll}
+            disabled={refreshing}
+            aria-label="Tabloyu yenile"
+            className="gap-1.5"
+          >
+            <RefreshCw
+              className={cn('size-4', refreshing && 'animate-spin motion-reduce:animate-none')}
+            />
+            <span className="hidden sm:inline">
+              {refreshing ? 'Yenileniyor…' : 'Yenile'}
+            </span>
+          </Button>
+          <PlayerSwitcher mode={mode} busy={sessionLoading} onSwitch={handleSwitch} />
+        </div>
       </header>
 
       <div className="mb-6">

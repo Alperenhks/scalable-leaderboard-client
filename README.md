@@ -57,9 +57,11 @@ yalnızca `Intl` ile biçimlendirme anında kullanılır.
 `useCountdown` timestamp farkından sayar — sekme arka plandayken `setInterval`
 kısılsa bile geri dönüşte doğru kalır. Saniyede istek atılmaz.
 
-**Polling sekme arka plandayken durur.** `usePolling` görünürlüğü izler; öne
-gelince bayat veri göstermemek için hemen bir kez çeker. Sıklıklar: tablo 30sn,
-kendi çevren 15sn, sezon 60sn.
+**Arka planda periyodik istek yok.** Veriler açılışta bir kez çekilir; sonra
+yalnızca kullanıcı yenile dediğinde, persona değiştiğinde veya skor
+gönderildiğinde tazelenir. Ölçüldü: 31 saniye boşta beklemede **0 istek**,
+yenile düğmesinde 6 istek. Karşılığında tablo canlı güncellenmez — bilinçli
+bir denge.
 
 **Yetkili uçlar token'ı bekler.** `enabled` bayrağı olmadan `/me`, `/around` ve
 `/me/rewards` kimlik alınmadan çağrılıyor ve 401 dönüyordu.
@@ -98,7 +100,7 @@ gönderme ekranı gösterilir.
 ```
 src/
 ├── api/          client.ts (fetch + token), types.ts (sözleşme)
-├── hooks/        usePolling, useCountdown, useSession
+├── hooks/        useResource, useCountdown, useSession
 ├── lib/          money (bigint kuruş), prize (pay hesabı), format, utils
 └── components/
     ├── leaderboard/   LeaderboardRow · LeaderboardList · AroundWindow

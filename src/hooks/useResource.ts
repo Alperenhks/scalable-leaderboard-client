@@ -1,14 +1,16 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-interface PollingState<T> {
+interface ResourceState<T> {
   data: T | null;
   error: Error | null;
-  /** Sadece ilk yüklemede true — polling sırasında iskelet gösterme. */
+  /** Sadece ilk yüklemede true — yeniden çekerken iskelet gösterme. */
   loading: boolean;
+  /** Arka planda tazeleme sürüyor mu (yenile düğmesi için). */
+  refreshing: boolean;
   refetch: () => void;
 }
 
-interface PollingOptions {
+interface ResourceOptions {
   /**
    * false iken hiç istek atılmaz. Yetkili uçlar için kullanılır:
    * token gelmeden /me çağırmak 401 döner.
@@ -17,18 +19,21 @@ interface PollingOptions {
 }
 
 /**
- * Belirli aralıkla veri çeker. Sekme arka plandayken durur,
- * öne gelince hemen bir kez çeker (bayat veri göstermemek için).
+ * Veriyi BİR KEZ çeker; sonra yalnızca açıkça istendiğinde tazeler.
+ *
+ * Zamanlayıcı yok, arka plan trafiği yok. Tazeleme üç durumda olur:
+ * kullanıcı yenile der, persona değişir, ya da skor gönderilir.
+ * Böylece ekran açık dururken sunucuya tek bir gereksiz istek gitmez.
  */
-export function usePolling<T>(
+export function useResource<T>(
   fetcher: (signal: AbortSignal) => Promise<T>,
-  intervalMs: number,
   deps: unknown[] = [],
-  { enabled = true }: PollingOptions = {},
-): PollingState<T> {
+  { enabled = true }: ResourceOptions = {},
+): ResourceState<T> {
   const [data, setData] = useState<T | null>(null);
   const [error, setError] = useState<Error | null>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   // fetcher her render'da yeni referans olabilir; efekti tetiklemesin.
   const fetcherRef = useRef(fetcher);
@@ -41,10 +46,10 @@ export function usePolling<T>(
     if (!enabled) return;
 
     const controller = new AbortController();
-    let timer: number | undefined;
     let cancelled = false;
+    setRefreshing(true);
 
-    const tick = async () => {
+    (async () => {
       try {
         const result = await fetcherRef.current(controller.signal);
         if (cancelled) return;
@@ -54,38 +59,19 @@ export function usePolling<T>(
         if (cancelled || controller.signal.aborted) return;
         setError(err instanceof Error ? err : new Error(String(err)));
       } finally {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+          setRefreshing(false);
+        }
       }
-    };
-
-    const schedule = () => {
-      window.clearTimeout(timer);
-      if (document.visibilityState !== 'visible') return;
-      timer = window.setTimeout(async () => {
-        await tick();
-        schedule();
-      }, intervalMs);
-    };
-
-    const onVisibility = () => {
-      if (document.visibilityState === 'visible') {
-        void tick().then(schedule);
-      } else {
-        window.clearTimeout(timer);
-      }
-    };
-
-    void tick().then(schedule);
-    document.addEventListener('visibilitychange', onVisibility);
+    })();
 
     return () => {
       cancelled = true;
       controller.abort();
-      window.clearTimeout(timer);
-      document.removeEventListener('visibilitychange', onVisibility);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [intervalMs, nonce, enabled, ...deps]);
+  }, [nonce, enabled, ...deps]);
 
-  return { data, error, loading, refetch };
+  return { data, error, loading, refreshing, refetch };
 }
