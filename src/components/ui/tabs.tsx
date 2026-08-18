@@ -28,7 +28,11 @@ export function TabsTrigger({
   return (
     <TabsPrimitive.Trigger
       className={cn(
-        'inline-flex flex-1 items-center justify-center gap-1.5 rounded-full px-3 py-1.5',
+        // min-h-11 (44px): WCAG 2.5.5 ve Apple HIG'in önerdiği asgari dokunma
+        // hedefi. Önceki py-1.5 + 12px metin ~28px yükseklik veriyordu ve
+        // telefonda yanlış sekmeye basmak kolaydı. Genişlik zaten flex-1 ile
+        // yeterli; eksik olan yükseklikti.
+        'inline-flex min-h-11 flex-1 items-center justify-center gap-1.5 rounded-full px-2 py-2 sm:px-3',
         'text-[12px] font-extrabold uppercase tracking-wide text-cocoa/60 transition-all',
         'hover:text-cocoa',
         // Etkin sekme kabartma sarı düğme olur
