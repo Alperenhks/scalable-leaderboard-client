@@ -31,8 +31,20 @@ export interface AroundResponse {
   rank: number | null;
   score: number;
   total: number;
-  /** true ise oyuncu zaten ilk 100'de; ayrı pencere gösterme. */
+  /** true ise oyuncu zaten ilk 100'de. */
   inTopWindow: boolean;
+  /**
+   * Oyuncunun çevresindeki pencere. UZUNLUĞU SABİT DEĞİL (3–6):
+   *   1. sıra      → üstünde kimse yok, 3 kayıt
+   *   2-3. sıra    → 5 kayıt
+   *   4 ve sonrası → 3 üst + kendisi + 2 alt = 6 kayıt
+   *   son sıra     → altında kimse yok, 4 kayıt
+   * Oyuncu sıralamada değilse boş dizi döner.
+   *
+   * Kendi satırını index'e göre değil `isCurrentUser` ile bul.
+   */
+  neighbours: LeaderboardEntry[];
+  /** Geniş liste; "Çevrem" için `neighbours` kullanılır. */
   entries: LeaderboardEntry[];
 }
 
@@ -92,4 +104,36 @@ export interface IdentifyResponse {
   rank: number | null;
   score: number;
   seasonId: string;
+}
+
+export interface ProjectionEntry {
+  rank: number;
+  userId: string;
+  /** Kuruş hassasiyetinde string — Number'a çevirme. */
+  amount: MoneyString;
+}
+
+export interface ProjectionMe {
+  rank: number | null;
+  score: number;
+  amount: MoneyString;
+  /** Ödül bölgesinde mi? */
+  isEligible: boolean;
+  /** Ödül bölgesine girmek için gereken puan; zaten içerideyse null. */
+  pointsToEligible: number | null;
+}
+
+/**
+ * "Sezon şu an bitse ne kazanırım?" — ödül tutarlarının tek kaynağı.
+ * İstemcide yeniden hesaplamak yerine bunu kullan: gösterilen tutar
+ * ödenecek tutardan ayrışmasın.
+ *
+ * Auth'suz da çalışır; o durumda `me` null döner.
+ */
+export interface ProjectionResponse {
+  seasonId: string;
+  poolAmount: MoneyString;
+  rewardedPlayerCount: number;
+  entries: ProjectionEntry[];
+  me: ProjectionMe | null;
 }

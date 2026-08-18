@@ -1,6 +1,6 @@
-import type { AroundResponse, MeResponse } from '@/api/types';
+import type { AroundResponse, MeResponse, ProjectionMe } from '@/api/types';
 import { formatScoreFull } from '@/lib/format';
-import type { PrizeTable } from '@/lib/prize';
+import { toMinor } from '@/lib/money';
 import { cn } from '@/lib/utils';
 import { CoinValue } from '@/components/ui/CoinValue';
 import { CountryTag } from '@/components/ui/CountryTag';
@@ -10,7 +10,8 @@ import { PlayerAvatar } from '@/components/ui/PlayerAvatar';
 interface Props {
   me: MeResponse | null;
   around: AroundResponse | null;
-  prizes?: PrizeTable;
+  /** Sunucunun ödül tahmini — tutar ve ödül bölgesi bilgisi buradan gelir. */
+  projectionMe?: ProjectionMe | null;
   className?: string;
 }
 
@@ -20,7 +21,7 @@ const tr = new Intl.NumberFormat('tr-TR');
  * "Sen" kartı — kendi sıranı bulmak için kaydırmak gerekmesin diye
  * listenin üstünde durur. Yeşil kapsül, listedeki kendi satırınla aynı dil.
  */
-export function MyRankCard({ me, around, prizes, className }: Props) {
+export function MyRankCard({ me, around, projectionMe, className }: Props) {
   if (!me) {
     return (
       <div
@@ -40,7 +41,8 @@ export function MyRankCard({ me, around, prizes, className }: Props) {
   const above = myIndex > 0 ? entries[myIndex - 1] : null;
   const gapAbove = above ? above.score - me.score : null;
 
-  const prize = me.rank != null ? (prizes?.byUserId.get(me.userId) ?? null) : null;
+  // Tutar sunucudan; "0.00" ise ödül bölgesinde değil demektir.
+  const prizeMinor = projectionMe?.isEligible ? toMinor(projectionMe.amount) : null;
 
   return (
     <section
@@ -71,13 +73,13 @@ export function MyRankCard({ me, around, prizes, className }: Props) {
           <CoinValue score={me.score} full className="text-[12px] text-cocoa/80" />
         </div>
 
-        {prize != null && (
+        {prizeMinor != null && (
           <div className="hidden shrink-0 flex-col items-end sm:flex">
             <span className="text-[9px] font-extrabold uppercase tracking-wide text-cocoa/55">
               tahmini ödül
             </span>
             <MoneyValue
-              minor={prize}
+              minor={prizeMinor}
               className="tnum text-sm font-extrabold text-[#a8620c]"
             />
           </div>
@@ -87,11 +89,13 @@ export function MyRankCard({ me, around, prizes, className }: Props) {
       <p className="mt-2 border-t-2 border-dashed border-leaf-d/40 pt-1.5 text-[11px] font-bold text-cocoa/70">
         {unranked
           ? 'Henüz skorun yok — ilk uçağını indir, tabloya gir!'
-          : gapAbove != null
-            ? `↑ Bir üstekine ${tr.format(gapAbove)} puan kaldı`
-            : around?.inTopWindow
-              ? '🎉 İlk 100’desin, bu sezon ödül alıyorsun!'
-              : `Skorun ${formatScoreFull(me.score)} · sıralaman güncelleniyor`}
+          : projectionMe?.isEligible
+            ? '🎉 Ödül bölgesindesin, bu sezon kazanıyorsun!'
+            : gapAbove != null
+              ? `↑ Bir üstekine ${tr.format(gapAbove)} puan kaldı`
+              : projectionMe?.pointsToEligible != null
+                ? `Ödül bölgesine ${tr.format(projectionMe.pointsToEligible)} puan kaldı`
+                : `Skorun ${formatScoreFull(me.score)} · sıralaman güncelleniyor`}
       </p>
     </section>
   );

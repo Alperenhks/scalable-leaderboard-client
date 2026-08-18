@@ -25,23 +25,6 @@ export function fromMinor(minor: bigint): string {
   return `${negative ? '-' : ''}${whole}.${cents}`;
 }
 
-/**
- * Kuruş cinsinden orantılı pay: minor × numerator / denominator.
- * Tamsayı bölmesi olduğu için toplamda birkaç kuruş eksik kalabilir;
- * bu bir tahmin gösterimi, muhasebe değil.
- */
-export function shareOf(minor: bigint, numerator: bigint, denominator: bigint): bigint {
-  if (denominator === 0n) return 0n;
-  return (minor * numerator) / denominator;
-}
-
-/** Ondalıklı oranı (0.55) kesir olarak verir → [55n, 100n] */
-export function rateToFraction(rate: number): [bigint, bigint] {
-  const decimals = (String(rate).split('.')[1] ?? '').length;
-  const denominator = 10n ** BigInt(decimals);
-  return [BigInt(Math.round(rate * Number(denominator))), denominator];
-}
-
 const tryLira = new Intl.NumberFormat('tr-TR', {
   style: 'currency',
   currency: 'TRY',

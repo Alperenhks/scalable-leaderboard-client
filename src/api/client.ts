@@ -5,6 +5,7 @@ import type {
   LeaderboardResponse,
   MeResponse,
   MeRewardsResponse,
+  ProjectionResponse,
   SeasonResponse,
 } from './types';
 
@@ -41,7 +42,39 @@ interface RequestOptions {
   signal?: AbortSignal;
 }
 
+/**
+ * Uçuştaki GET istekleri. Aynı adrese ikinci bir istek gelirse yeni bağlantı
+ * açmak yerine mevcut söze bağlanır.
+ *
+ * Bu, React StrictMode'un dev'de yaptığı çift mount'ta ikinci isteğin hiç
+ * açılmamasını sağlar (network panelinde "(cancelled)" satırı kalmaz) ve
+ * üretimde de aynı veriyi isteyen iki bileşenin tek istek paylaşmasını sağlar.
+ */
+const inflight = new Map<string, Promise<unknown>>();
+
 async function request<T>(path: string, opts: RequestOptions = {}): Promise<T> {
+  const { auth = false, method = 'GET' } = opts;
+
+  // Sadece GET tekilleştirilir: POST'lar yan etkilidir, paylaşılamaz.
+  const shareKey = method === 'GET' ? `${auth ? 'a' : 'p'}:${path}` : null;
+  if (shareKey) {
+    const pending = inflight.get(shareKey);
+    if (pending) return pending as Promise<T>;
+  }
+
+  // Paylaşılan istek çağıranın signal'ına bağlanmaz: biri sökülünce
+  // diğerinin isteğini düşürmesin. İptal, sonucu yok saymakla sağlanır.
+  const run = doRequest<T>(path, shareKey ? { ...opts, signal: undefined } : opts);
+
+  if (shareKey) {
+    inflight.set(shareKey, run);
+    // Sonuç ne olursa olsun kaydı temizle; sonraki polling turu taze çeksin.
+    void run.catch(() => {}).finally(() => inflight.delete(shareKey));
+  }
+  return run;
+}
+
+async function doRequest<T>(path: string, opts: RequestOptions = {}): Promise<T> {
   const { auth = false, method = 'GET', body, signal } = opts;
 
   const headers: Record<string, string> = {};
@@ -110,6 +143,13 @@ export const getLeaderboard = (limit = 100, signal?: AbortSignal) =>
 
 export const getAround = (signal?: AbortSignal) =>
   request<AroundResponse>('/leaderboard/around', { auth: true, signal });
+
+/**
+ * Ödül tahminleri. Token varsa `me` alanı da dolu gelir.
+ * Tutarların tek kaynağı budur — istemcide yeniden hesaplama.
+ */
+export const getProjection = (signal?: AbortSignal) =>
+  request<ProjectionResponse>('/rewards/projection', { auth: true, signal });
 
 export const getSeason = (signal?: AbortSignal) =>
   request<SeasonResponse>('/rewards/season', { signal });

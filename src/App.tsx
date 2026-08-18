@@ -4,6 +4,7 @@ import {
   getLeaderboard,
   getMe,
   getMyRewards,
+  getProjection,
   getSeason,
   submitScore,
 } from '@/api/client';
@@ -69,6 +70,14 @@ export default function App() {
     authDeps,
     { enabled: ready },
   );
+  // Ödül tutarlarının tek kaynağı: sunucu. İstemcide yeniden hesaplanmaz.
+  // Token varsa `me` alanı da gelir (isEligible, pointsToEligible).
+  const projection = usePolling(
+    useCallback((signal: AbortSignal) => getProjection(signal), []),
+    POLL_LEADERBOARD,
+    authDeps,
+    { enabled: ready },
+  );
   const rewards = usePolling(
     useCallback((signal: AbortSignal) => getMyRewards(signal), []),
     POLL_SEASON,
@@ -76,11 +85,8 @@ export default function App() {
     { enabled: ready },
   );
 
-  // Ödül tablosu ilk 100 + sezon verisinden hesaplanır.
-  const prizes = useMemo(
-    () => buildPrizeTable(board.data?.entries ?? [], season.data),
-    [board.data, season.data],
-  );
+  // Ödül tablosu: sunucu tutarlarını userId ile eşleştirir.
+  const prizes = useMemo(() => buildPrizeTable(projection.data), [projection.data]);
 
   // Ülke sekmesi: backend'de ülke filtresi yok (?country= 400 döner),
   // bu yüzden çekilmiş ilk 100 üzerinde istemcide filtreleniyor.
@@ -98,9 +104,10 @@ export default function App() {
     board.refetch();
     around.refetch();
     season.refetch();
+    projection.refetch();
     me.refetch();
     rewards.refetch();
-  }, [board, around, season, me, rewards]);
+  }, [board, around, season, projection, me, rewards]);
 
   const handleSwitch = useCallback((next: DemoMode) => void switchTo(next), [switchTo]);
 
@@ -120,8 +127,16 @@ export default function App() {
   return (
     <div className="mx-auto max-w-5xl px-4 py-6 sm:py-8">
       <header className="mb-5 flex items-center justify-between gap-3">
-        <span className="text-xs font-extrabold uppercase tracking-[0.24em] text-cream/70">
-          Panteon
+        {/* Logonun yazısı beyaz; ahşap zeminde kaybolmasın diye koyu bir
+            levhanın üstünde duruyor. */}
+        <span className="inline-flex items-center rounded-xl border-[3px] border-bark bg-cocoa/85 px-3 py-1.5 shadow-[0_4px_0_rgb(0_0_0/0.3)]">
+          <img
+            src="/logo.png"
+            alt="Panteon"
+            width={555}
+            height={95}
+            className="h-5 w-auto sm:h-6"
+          />
         </span>
         <PlayerSwitcher mode={mode} busy={sessionLoading} onSwitch={handleSwitch} />
       </header>
@@ -134,7 +149,11 @@ export default function App() {
         {/* Ana pano */}
         <GamePanel title="Liderlik Tablosu">
           <div className="mb-3">
-            <MyRankCard me={me.data} around={around.data} prizes={prizes} />
+            <MyRankCard
+              me={me.data}
+              around={around.data}
+              projectionMe={projection.data?.me ?? null}
+            />
           </div>
 
           {fatal ? (
@@ -192,6 +211,7 @@ export default function App() {
                     around={around.data}
                     topWindowSize={TOP_LIMIT}
                     prizes={prizes}
+                    projectionMe={projection.data?.me ?? null}
                     submitting={submitting}
                     onSubmitScore={handleSubmitScore}
                   />
@@ -230,7 +250,7 @@ export default function App() {
         {/* Yan pano: ödül dağılımı ve geçmiş kazanımlar — hepsi API verisi */}
         <div className="space-y-8">
           <GamePanel title="Ödüller">
-            <PrizeBreakdown season={season.data} />
+            <PrizeBreakdown season={season.data} projection={projection.data} />
           </GamePanel>
 
           {hasRewards && (

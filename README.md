@@ -72,6 +72,16 @@ olarak `userId` verilir, index değil — sıra değiştiğinde liste baştan ç
 (`?country=` 400 döner). Çekilmiş ilk 100 üzerinde `entry.country` ile
 filtrelenir — kapsamı bu yüzden ilk 100 ile sınırlıdır.
 
+**Ödül tutarları sunucudan gelir.** `GET /rewards/projection` tek kaynaktır;
+istemcide yeniden hesaplanmaz, böylece gösterilen tutar ödenecek tutardan
+ayrışmaz. Yanıttaki `me.isEligible` ve `me.pointsToEligible` "ödül bölgesine ne
+kadar kaldı" mesajını besler.
+
+**"Çevrem" `neighbours` alanını kullanır.** Uzunluğu 3–6 arası değişir (1. sırada
+üstte kimse yok, son sırada altta kimse yok); sabit varsayılmaz. Kendi satırı
+index ile değil `isCurrentUser` ile bulunur. Sıralamada olmayan oyuncuda bu dizi
+boş döner ve skor gönderme ekranı gösterilir.
+
 **Bayraklar flagcdn'den gelir.** `entry.country` ISO kodu
 `https://flagcdn.com/w20/{kod}.png` adresine çevrilir (retina için `w40` 2x).
 Kod yoksa ya da CDN 404 dönerse bayrak hiç çizilmez — kırık görsel çıkmaz.
