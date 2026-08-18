@@ -13,6 +13,8 @@ interface Props {
   projectionMe?: ProjectionMe | null;
   submitting?: boolean;
   onSubmitScore?: () => void;
+  /** Skor gönderimi başarısız olduysa gösterilecek mesaj. */
+  submitError?: string | null;
 }
 
 const tr = new Intl.NumberFormat('tr-TR');
@@ -30,6 +32,7 @@ export function AroundWindow({
   projectionMe,
   submitting = false,
   onSubmitScore,
+  submitError = null,
 }: Props) {
   // Durum C — sıralamada değil. `rank: null`, `0` değil; bu durumda
   // sunucu `neighbours` olarak boş dizi döner.
@@ -51,6 +54,11 @@ export function AroundWindow({
             {submitting ? 'Gönderiliyor…' : 'Skor Gönder'}
           </Button>
         )}
+        {submitError && (
+          <p role="alert" className="mt-3 text-[12px] font-bold text-rose-d">
+            {submitError}
+          </p>
+        )}
       </div>
     );
   }
@@ -58,8 +66,8 @@ export function AroundWindow({
   // Pencere sunucudan gelir; uzunluğu 3-6 arası değişir, sabit varsayma.
   // Kendi satırı `isCurrentUser` ile bulunur — 1. sıradaki oyuncunun üstünde
   // kimse olmadığı için index'e göre arama yanlış olur.
-  const window = around.neighbours;
-  const firstWindowRank = window[0]?.rank ?? around.rank;
+  const rows = around.neighbours;
+  const firstWindowRank = rows[0]?.rank ?? around.rank;
   // Pencere ilk 100'ün dışındaysa arada atlanan sıralar var demektir.
   const skipped = Math.max(0, firstWindowRank - topWindowSize - 1);
   // Sunucu "ödül bölgesine kaç puan" diyor; sıra farkından daha somut.
@@ -79,7 +87,7 @@ export function AroundWindow({
         </div>
       )}
 
-      <LeaderboardList entries={window} prizes={prizes} />
+      <LeaderboardList entries={rows} prizes={prizes} />
 
       <p className="mt-3 rounded-xl border-2 border-bark/25 bg-gold-1/60 px-3 py-2 text-center text-[11px] font-bold text-cocoa/75">
         {projectionMe?.isEligible ? (

@@ -5,7 +5,6 @@ interface Props {
   title: string;
   icon?: string;
   children: ReactNode;
-  footer?: ReactNode;
   className?: string;
 }
 
@@ -13,7 +12,7 @@ interface Props {
  * Oyun paneli: altın gövde, kalın kontur ve üstünde kurdele başlık.
  * Kurdele panelin dışına taşar, bu yüzden kapsayıcıda üstten boşluk var.
  */
-export function GamePanel({ title, icon, children, footer, className }: Props) {
+export function GamePanel({ title, icon, children, className }: Props) {
   return (
     <section className={cn('relative min-w-0 pt-7', className)}>
       {/* Kurdele: panelin üst kenarına oturur, iki ucu aşağı kıvrılır */}
@@ -47,7 +46,6 @@ export function GamePanel({ title, icon, children, footer, className }: Props) {
           className="absolute inset-x-0 top-0 h-1 bg-[repeating-linear-gradient(90deg,var(--color-sky)_0_14px,var(--color-coin-1)_14px_28px)] opacity-60"
         />
         {children}
-        {footer && <div className="mt-4 flex justify-center gap-3">{footer}</div>}
       </div>
     </section>
   );

@@ -5,8 +5,6 @@ interface ResourceState<T> {
   error: Error | null;
   /** Sadece ilk yüklemede true — yeniden çekerken iskelet gösterme. */
   loading: boolean;
-  /** Arka planda tazeleme sürüyor mu (yenile düğmesi için). */
-  refreshing: boolean;
   refetch: () => void;
 }
 
@@ -33,7 +31,6 @@ export function useResource<T>(
   const [data, setData] = useState<T | null>(null);
   const [error, setError] = useState<Error | null>(null);
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
 
   // fetcher her render'da yeni referans olabilir; efekti tetiklemesin.
   const fetcherRef = useRef(fetcher);
@@ -47,7 +44,6 @@ export function useResource<T>(
 
     const controller = new AbortController();
     let cancelled = false;
-    setRefreshing(true);
 
     (async () => {
       try {
@@ -61,7 +57,6 @@ export function useResource<T>(
       } finally {
         if (!cancelled) {
           setLoading(false);
-          setRefreshing(false);
         }
       }
     })();
@@ -73,5 +68,5 @@ export function useResource<T>(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nonce, enabled, ...deps]);
 
-  return { data, error, loading, refreshing, refetch };
+  return { data, error, loading, refetch };
 }

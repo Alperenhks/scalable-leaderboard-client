@@ -114,11 +114,20 @@ export default function App() {
 
   const handleSwitch = useCallback((next: DemoMode) => void switchTo(next), [switchTo]);
 
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
   const handleSubmitScore = useCallback(async () => {
     setSubmitting(true);
+    setSubmitError(null);
     try {
       await submitScore(25_000, 'first_landing');
       refetchAll();
+    } catch (err) {
+      // Sessizce yutmak, düğmenin hiçbir şey yapmamış gibi eski haline
+      // dönmesi demekti; kullanıcı isteğin başarısız olduğunu anlamazdı.
+      setSubmitError(
+        err instanceof Error ? err.message : 'Skor gönderilemedi.',
+      );
     } finally {
       setSubmitting(false);
     }
@@ -215,6 +224,7 @@ export default function App() {
                     prizes={prizes}
                     projectionMe={projection.data?.me ?? null}
                     submitting={submitting}
+                    submitError={submitError}
                     onSubmitScore={handleSubmitScore}
                   />
                 ) : (
