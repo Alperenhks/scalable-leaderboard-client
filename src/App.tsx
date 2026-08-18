@@ -1,5 +1,4 @@
 import { useCallback, useMemo, useState } from 'react';
-import { RefreshCw } from 'lucide-react';
 import {
   getAround,
   getLeaderboard,
@@ -24,7 +23,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useResource } from '@/hooks/useResource';
 import { useSession } from '@/hooks/useSession';
 import { buildPrizeTable } from '@/lib/prize';
-import { cn } from '@/lib/utils';
 
 const TOP_LIMIT = 100;
 
@@ -128,9 +126,6 @@ export default function App() {
   }, [refetchAll]);
 
   const hasRewards = (rewards.data?.count ?? 0) > 0;
-  // Tablo verisi tazeleniyor mu — yenile düğmesi bunu gösterir.
-  const refreshing =
-    board.refreshing || around.refreshing || projection.refreshing || me.refreshing;
 
   return (
     <div className="mx-auto w-full max-w-5xl px-3 py-6 sm:px-4 sm:py-8">
@@ -151,23 +146,7 @@ export default function App() {
             className="absolute inset-x-2 bottom-0 h-[2px] bg-[repeating-linear-gradient(90deg,var(--color-coin-1)_0_10px,transparent_10px_20px)] opacity-70"
           />
         </span>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="gold"
-            onClick={refetchAll}
-            disabled={refreshing}
-            aria-label="Tabloyu yenile"
-            className="gap-1.5"
-          >
-            <RefreshCw
-              className={cn('size-4', refreshing && 'animate-spin motion-reduce:animate-none')}
-            />
-            <span className="hidden sm:inline">
-              {refreshing ? 'Yenileniyor…' : 'Yenile'}
-            </span>
-          </Button>
-          <PlayerSwitcher mode={mode} busy={sessionLoading} onSwitch={handleSwitch} />
-        </div>
+        <PlayerSwitcher mode={mode} busy={sessionLoading} onSwitch={handleSwitch} />
       </header>
 
       <div className="mb-4">
