@@ -21,7 +21,7 @@ export function SeasonHeader({ season }: Props) {
 
   if (!season) {
     return (
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="grid gap-2.5 sm:grid-cols-2 sm:gap-3">
         <div className="h-16 animate-pulse rounded-2xl border-[3px] border-bark bg-gold-2/60 motion-reduce:animate-none" />
         <div className="h-16 animate-pulse rounded-2xl border-[3px] border-bark bg-gold-2/60 motion-reduce:animate-none" />
       </div>
@@ -33,14 +33,14 @@ export function SeasonHeader({ season }: Props) {
   const urgent = remaining <= DAY;
 
   return (
-    <div className="grid gap-3 sm:grid-cols-2">
+    <div className="grid gap-2.5 sm:grid-cols-2 sm:gap-3">
       <Plate label="⏱ Sezon bitimine">
         <time
           // Ekran okuyucular saniye saniye okumasın.
           aria-live="off"
           dateTime={`P${days}DT${hours}H${minutes}M${seconds}S`}
           className={cn(
-            'tnum text-2xl font-extrabold',
+            'tnum text-lg font-extrabold sm:text-2xl',
             urgent ? 'text-[#c0392b]' : 'text-cocoa',
           )}
         >
@@ -52,7 +52,7 @@ export function SeasonHeader({ season }: Props) {
       <Plate label="💰 Ödül havuzu">
         <MoneyValue
           minor={toMinor(season.poolAmount)}
-          className="tnum text-2xl font-extrabold text-[#a8620c]"
+          className="tnum text-lg font-extrabold text-amount sm:text-2xl"
         />
         <span className="mt-0.5 block text-[10px] font-bold text-cocoa/60">
           {new Intl.NumberFormat('tr-TR').format(season.playerCount)} oyuncu · ilk{' '}
@@ -65,7 +65,7 @@ export function SeasonHeader({ season }: Props) {
 
 function Plate({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-2xl border-[3px] border-bark bg-gradient-to-b from-gold-2 to-gold-3 px-4 py-2.5 shadow-[inset_0_2px_0_rgb(255_255_255/0.5),0_4px_0_rgb(0_0_0/0.25)]">
+    <div className="min-w-0 rounded-2xl border-[3px] border-bark bg-gradient-to-b from-gold-2 to-gold-3 px-3 py-2 shadow-[inset_0_2px_0_rgb(255_255_255/0.5),0_4px_0_rgb(0_0_0/0.25)] sm:px-4 sm:py-2.5">
       <span className="block text-[10px] font-extrabold uppercase tracking-wide text-cocoa/60">
         {label}
       </span>

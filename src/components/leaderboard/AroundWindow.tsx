@@ -89,7 +89,7 @@ export function AroundWindow({
         ) : pointsToEligible != null ? (
           <>
             Ödül bölgesine{' '}
-            <strong className="text-[#a8620c]">{tr.format(pointsToEligible)} puan</strong>{' '}
+            <strong className="text-amount">{tr.format(pointsToEligible)} puan</strong>{' '}
             kaldı ·{' '}
           </>
         ) : null}

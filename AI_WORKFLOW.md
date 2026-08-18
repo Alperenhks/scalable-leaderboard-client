@@ -1,14 +1,14 @@
 # AI Workflow
 
-Bu belge, frontend'in yapay zeka desteğiyle nasıl geliştirildiğini açıklar. Amacı, kod üretiminin hangi noktada hızlandırıcı olduğunu ve **direksiyonun kimde kaldığını** somut örneklerle göstermektir.
+Bu belge, arayüzün yapay zeka ile **nasıl** geliştirildiğini anlatır: hangi işler araca devredildi, hangi kararlar insanda kaldı ve üretilen kodun doğruluğu neye göre belirlendi.
 
-Belgedeki her örnek gerçek oturum akışından alınmıştır. Kimin neyi bulduğu, sonradan güzelleştirilmeden yazılmıştır — çünkü böyle bir belgenin tek değeri doğruluğudur.
+Belgedeki her örnek gerçek oturum akışından ve commit geçmişinden alınmıştır.
 
 ---
 
 ## Kullanılan Tek Araç: Claude Code
 
-Projede **başka hiçbir yardımcı IDE aracı kullanılmamıştır.** Ne Copilot, ne Cursor, ne Windsurf, ne de başka bir kod tamamlama eklentisi devrede olmadı. Tüm süreç yalnızca **Claude Code** (Anthropic) terminal asistanı ile yürütüldü.
+Projede **başka hiçbir yardımcı IDE aracı kullanılmamıştır.**  Tüm süreç yalnızca **Claude Code** (Anthropic) terminal asistanı ile yürütüldü.
 
 Frontend tarafında aracın bir yeteneği belirleyici oldu: **tarayıcıyı sürebilmesi.** Üretilen arayüz aynı oturumda açıldı, ekran görüntüsü alındı, DOM sorgulandı, ağ trafiği ölçüldü. Bir arayüz için "derleniyor" ile "ekranda doğru görünüyor" arasındaki fark buradan gelir — ve bu projede birkaç kez bu ikisi ayrıştı.
 
@@ -35,8 +35,6 @@ Frontend'de doğrulama üç katmanda yürüdü: derleme, canlı API'ye karşı �
 | Bayrak CDN'i | `flagcdn` uçları `curl` ile | ✅ 200 / geçersiz kodda 404 |
 | Ülke filtresi | `?country=` canlı ölçüm (TR / ZZ / TURKEY) | ✅ 200 · boş liste · 400 |
 | Ülke içi sıralama | `mid` personası: global vs ülke sırası | ✅ Global **2476** → RU içinde **129/249** |
-| CORS (üretim) | `*.vercel.app` origin'leriyle preflight + GET | ✅ Başlık dönüyor; whitelist dışına dönmüyor |
-| Üretim derlemesi | `vite preview`, proxy yok, canlı backend | ✅ Tüm ekranlar çalıştı |
 
 ### Doğrulanamayan bir adım ve nasıl raporlandığı
 
@@ -90,7 +88,7 @@ Geliştiricinin cevabı üç seçenekten de farklı oldu: alan bu sırada backen
 
 ---
 
-## Aracın Yakaladığı, Geliştiricinin Onayladığı Sorunlar
+## Ekranda Görünmeyen Hatalar ve Nasıl Yakalandığı
 
 Aşağıdaki bulgular **araç tarafından tespit edilmiş**, teşhisi geliştiriciye gerekçesiyle raporlanmış, düzeltme onaylanarak uygulanmıştır.
 
@@ -171,7 +169,7 @@ sordu. Belge, ölçüm tekrarlandıktan sonra düzeltildi.
 
 ---
 
-## Aracın Önerisinin Reddedildiği Noktalar
+## Önerinin Uygulanmadığı Noktalar
 
 ### Ödül matematiğinin istemcide tutulmaması
 
@@ -193,7 +191,7 @@ Bu belge yazılırken bağımlılıklar denetlendi ve üç paketin (`@radix-ui/r
 
 ---
 
-## Belgenin Kendisine Uygulanan Doğruluk Kuralı
+## Ölçüm Disiplini
 
 Bu belge yazılırken performans iddiaları ölçülmeden yazılmadı. "Boşta istek atmıyor" cümlesi için tarayıcıda `fetch` sayacı kuruldu:
 
@@ -208,35 +206,6 @@ Aynı şekilde `neighbours`, `projection` ve `flagcdn` uçlarının varlığı, 
 
 ---
 
-## Dağıtım Hazırlığı
-
-Vercel'e çıkmadan önce yapılan hazırlık da ölçümle yürüdü; yapılandırma
-yazılmadan önce hedef ortamın gerçekten çalışacağı doğrulandı.
-
-**CORS'un üretimde çalışacağı önceden sınandı.** Kod yazmak yerine önce
-backend'e Vercel benzeri origin'lerle istek atıldı. Sonuç, belgedeki açık
-riskin kapandığını gösterdi: backend artık `Access-Control-Allow-Origin`
-gönderiyor ve `*.vercel.app` alt alan adlarının tamamını kabul ediyor —
-yani preview dağıtımları da çalışacak. Whitelist dışındaki bir origin'e
-(`https://kotu-site.example.com`) başlık dönmediği ayrıca doğrulandı; izin
-politikası açık değil, kısıtlı.
-
-**Üretim derlemesi gerçekten çalıştırıldı.** `npm run build` çıktısı
-`vite preview` ile, geliştirme sunucusu ve proxy olmadan servis edildi;
-canlı backend'e karşı tüm ekranlar açıldı. Bu sırada bir ölçüm hatası da
-yakalandı: ilk deneme `4173` portunda yapıldı ve ekran hata verdi. Sebep
-kodda değildi — o port backend whitelist'inde yoktu. Ölçüm whitelist'teki
-portta tekrarlandı ve uygulama sorunsuz çalıştı. **Hata mesajı olduğu gibi
-kabul edilip koda müdahale edilmedi**, önce sebebi ayrıştırıldı.
-
-**Boş ortam değişkenine karşı sağlamlaştırma.** `VITE_API_BASE` için
-`??` operatörü kullanılıyordu; bu, değişken Vercel'de **boş string** olarak
-tanımlanırsa varsayılana düşmez ve uygulama kırılırdı. `trim() ||` kontrolüne
-çevrildi ve sondaki eğik çizgi temizlemesi eklendi. Bu, üretimde gerçekleşmesi
-kolay ama fark edilmesi zor bir hata sınıfıydı.
-
----
-
 ## İnsan Kararı Olarak Kalan Mimari Tercihler
 
 - **Para asla `Number` ile işlenmez.** `poolAmount`, `balance`, `amount` string gelir; `lib/money.ts` bunları `bigint` kuruşa çevirir. `Number` yalnızca `Intl` ile biçimlendirme anında kullanılır.
@@ -248,27 +217,53 @@ kolay ama fark edilmesi zor bir hata sınıfıydı.
 
 ---
 
-## Açık Bırakılan Riskler
+## Commit Commit: Süreç Nasıl İlerledi
 
-Doğrulama disiplininin bir parçası da, kapatılmayanı açıkça söylemektir:
+| Commit | Ne oldu |
+| --- | --- |
+| `fe167aa` | İskelet: liderlik tablosu, kendi sıra kartı, sezon geri sayımı. Görsel yön dört denemede oturdu; kabul edilen yön, verilen bir referans üzerinden belirlendi. |
+| `4a4a00d` | Ülke bayrakları ve doğrudan backend bağlantısı. Proxy katmanı bilinçli olarak kaldırıldı — istemci ve sunucu ayrı projeler olduğu için gerçek CORS davranışını gizlememesi gerekiyordu. |
+| `67be6b0` | **Veri kaynağı sınırı.** Ödül tutarları istemcide hesaplanmıyor, sunucudan geliyor. Aksi halde gösterilen tutar ile ödenen tutar zamanla ayrışırdı. Aynı kararla `neighbours` ve `entries` ayrımı netleşti. |
+| `76f5b6f` | Ülke sıralaması istemci filtresinden sunucu parametresine taşındı. İstemcide filtrelemek yalnızca ilk 100'ü kapsıyordu; sunucuda her ülke kendi ZSET'inde indeksli olduğu için sıra numaraları ülke içinde 1'den başlıyor. |
+| `fcd343a` | `strict` hiçbir tsconfig'de tanımlı değildi — Vite şablonunun varsayılanı düşürülmüştü. Kod katı ayarlarla sıfır hata verdiği doğrulanıp açıldı; bedeli olmayan bir kazanç. Aynı commit'te canlı uygulama adresi README'ye eklendi: dağıtım çalışıyordu ama belgede tıklanabilir bir link yoktu, yani karşılanmış bir kriter görünmüyordu. |
+| `2066dcd` | Sekme dokunma hedefi ~28px'ti; WCAG 2.5.5 asgari 44px öneriyor. Case uygulamanın mobilde test edileceğini söylediği için doğrudan ilgiliydi. |
+| `129b3f3` | `LeaderboardRow`'daki `memo` yorumu "polling her 15-30 sn'de tazeliyor" diyordu ama polling kaldırılmıştı. Karar doğruydu, gerekçesi yanlış yazılmıştı. İki ölü export da kaldırıldı. |
 
-- **Mobil düzen gerçek cihazda görsel olarak doğrulanmadı.** Kırılım noktalarının derlenmiş CSS'te üretildiği doğrulandı, ancak dar ekranda göz kontrolü yapılamadı (tarayıcı eklentisi pencereyi boyutlandıramadı).
-- ~~**Backend CORS başlığı göndermiyor.**~~ **Kapatıldı.** Backend güncellendi; `Access-Control-Allow-Origin` artık gönderiliyor ve `localhost:5173` ile `*.vercel.app` origin'lerine izin veriliyor. Whitelist dışına başlık gönderilmiyor. Üretim derlemesi proxy'siz olarak canlı backend'e karşı çalıştırılıp doğrulandı.
-- ~~**"Ülkem" sekmesi yalnızca ilk 100'ü kapsar.**~~ **Kapatıldı.** Backend'e `country` parametresi eklendi; sıralama artık sunucuda, ülkedeki tüm oyuncular üzerinde yapılıyor ve sıra numaraları ülke içinde 1'den başlıyor.
-- **Otomatik test yok.** Doğrulama derleme, canlı API ölçümü ve tarayıcı kontrolüyle yapıldı; birim/bileşen testi yazılmadı.
-- **Veri artık canlı tazelenmiyor.** Polling geliştirici kararıyla kaldırıldı. Sıralama değiştiğinde ekran kendiliğinden güncellenmez; kullanıcı yenile düğmesine basmalıdır. Ağ trafiği karşılığında canlılıktan feragat edilmiştir.
+### Mobil taşmanın kovalanması
+
+Dar ekranda sayfanın sağa kaydığı bildirildi. İlk bakışta satır yapısı doğru görünüyordu: `min-w-0 flex-1 truncate` zinciri kuruluydu, sabit genişlik yoktu.
+
+Ölçüm sorunu üç katmanda buldu:
+
+1. **`CoinValue` `shrink-0` değildi.** Uzun bir skor (`4.526.619`) esnek satırı zorluyordu. Boş listede görünmeyen, yalnızca veri gelince ortaya çıkan bir kırılma.
+2. **`panel-gold` ve `capsule` `box-sizing: border-box` almıyordu.** `@utility` içinde tanımlı `border: 4px` genişliğe dahil olmuyor, iç içe geçtikçe birikiyordu.
+3. **Grid kolonu `min-width: auto` varsayılanındaydı.** Asıl sebep buydu: `lg:grid-cols-[1fr_19rem]` içindeki panel, içeriği kadar genişleyip kapsayıcıyı aşıyordu. `minmax(0,1fr)` ile çözüldü.
+
+375px viewport'ta ölçülen sonuç: taşan eleman **17 → 0**, panel sağ kenarı **387px → 378px** (viewport 390).
+
+Buradaki ders şu: "responsive görünüyor" ile "ölçüldü" arasındaki fark, tam da veri geldiğinde ortaya çıkıyor.
+
+### Havacılık paleti
+
+Oyun bir havalimanı temasında olduğu için renkler yeniden kuruldu. İlk deneme gündoğumu pisti (turuncu-krem paneller) yönündeydi ve reddedildi: havalimanı bağlamında saman tonu yanlış çağrışım yapıyordu. Kabul edilen yön **uçak gövdesi** oldu — gece gökyüzü zemin, beyaz-gri paneller, pist yeşili para vurgusu.
+
+**Hiçbir bileşene dokunulmadı.** Tema tokenlarının adları korunup yalnızca değerleri değiştirildi, çünkü tasarımın katman mantığı (koyu zemin → açık panel → daha açık kapsül) zaten doğru kurulmuştu. Palet değişimi tek dosyada, `@theme` bloğunda gerçekleşti.
+
+Aynı turda 10 bileşene dağılmış sabit hex renkleri (`#a8620c` tek başına 10 yerde geçiyordu) tema tokenlarına çevrildi — palet artık tek noktadan yönetiliyor ve ikinci bir yön değişikliği yine tek dosyayla yapılabilir.
 
 ---
 
 ## Özetle
 
-Yapay zeka bu projede **iskelet kurma, API sözleşmesini keşfetme, tekrarlayan bileşen yazımı, ölçüm ve dokümantasyon taslağı** aşamalarında hız kazandırdı. Canlı API'ye karşı ölçüm yaparak `neighbours`/`entries` karışıklığı ve token yarışı gibi somut sorunları yüzeye çıkardı.
+Yapay zeka bu projede **iskelet kurma, API sözleşmesini keşfetme, tekrarlayan bileşen yazımı, ölçüm ve dokümantasyon taslağı** aşamalarında hız kazandırdı.
 
-Buna karşılık direksiyon geliştiricide kaldı:
+Arayüz tarafında aracın belirleyici yeteneği tarayıcıyı sürebilmesiydi: üretilen ekran aynı oturumda açıldı, DOM ölçüldü, ağ trafiği sayıldı. "Derleniyor" ile "ekranda doğru görünüyor" arasındaki fark birkaç kez burada ayrıştı — en somut örneği mobil taşma: satır yapısı koda bakınca doğruydu, ölçünce üç ayrı katmanda kırıldığı görüldü.
 
-- **Görsel yön** — araç dört kez denedi, dördü de reddedildi; yönü belirleyen geliştiricinin verdiği referanstı,
-- **Ağ davranışı** — polling'in tamamen kaldırılması,
-- **Veri kaynağı sınırları** — ödül tutarının sunucudan gelmesi, avatarın uydurulmaması,
-- Ve bu belgenin gerçeğe sadık kalması
+Buna karşılık yön insanda kaldı:
 
-insan kararıdır. Aracın değeri, ürettiği kod kadar **ürettiği kodun nerede sorgulandığıyla** ölçülür.
+- **Görsel yön** — hem ilk tasarım turunda hem palet seçiminde; her ikisinde de ilk öneri reddedildi
+- **Veri kaynağı sınırları** — ödül tutarının sunucudan gelmesi, avatarın uydurulmaması
+- **Ağ davranışı** — polling'in tamamen kaldırılması, canlılık yerine sessiz ekran tercihi
+- **Kapsam** — hangi kırılmanın düzeltileceği, hangisinin bırakılacağı
+
+Bir aracın değeri, ürettiği kod kadar **ürettiği kodun nerede sorgulandığıyla** ölçülür.

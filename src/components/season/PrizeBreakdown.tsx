@@ -51,12 +51,12 @@ export function PrizeBreakdown({ season, projection }: Props) {
           <MoneyValue
             minor={s.minor}
             compact
-            className="tnum w-16 text-right text-[12px] font-extrabold text-[#a8620c]"
+            className="tnum w-16 text-right text-[12px] font-extrabold text-amount"
           />
         </li>
       ))}
       <li className="px-2 pt-1 text-[10px] font-semibold leading-relaxed text-cocoa/60">
-        4. sıradan sonraki pay sıraya değil skora orantılı bölünür — skorun arttıkça
+        4. sıradan sonraki pay sıraya orantılı bölünür — sıran yükseldikçe
         payın da artar.
       </li>
     </ul>

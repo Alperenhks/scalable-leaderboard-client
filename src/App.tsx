@@ -133,18 +133,17 @@ export default function App() {
     board.refreshing || around.refreshing || projection.refreshing || me.refreshing;
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-6 sm:py-8">
+    <div className="mx-auto w-full max-w-5xl px-3 py-6 sm:px-4 sm:py-8">
       <header className="mb-5 flex items-center justify-between gap-3">
         {/* Logonun yazısı beyaz; ahşap zeminde kaybolmasın diye koyu bir
             levhanın üstünde duruyor. */}
-        <span className="inline-flex items-center rounded-xl border-[3px] border-bark bg-cocoa/85 px-3 py-1.5 shadow-[0_4px_0_rgb(0_0_0/0.3)]">
-          <img
-            src="/logo.png"
-            alt="Panteon"
-            width={555}
-            height={95}
-            className="h-5 w-auto sm:h-6"
-          />
+        <span className="inline-flex min-w-0 items-center gap-1.5 rounded-xl border-[3px] border-bark bg-cocoa/85 px-2.5 py-1.5 shadow-[0_4px_0_rgb(0_0_0/0.3)] sm:px-3">
+          <span aria-hidden="true" className="text-base sm:text-lg">
+            ✈️
+          </span>
+          <span className="truncate text-[13px] font-extrabold uppercase tracking-wide text-cream sm:text-base">
+            Airport Master
+          </span>
         </span>
         <div className="flex items-center gap-2">
           <Button
@@ -169,7 +168,7 @@ export default function App() {
         <SeasonHeader season={season.data} />
       </div>
 
-      <div className="grid items-start gap-8 lg:grid-cols-[1fr_19rem]">
+      <div className="grid min-w-0 items-start gap-8 lg:grid-cols-[minmax(0,1fr)_19rem]">
         {/* Ana pano */}
         <GamePanel title="Liderlik Tablosu">
           <div className="mb-3">

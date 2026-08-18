@@ -50,7 +50,7 @@ export function DropdownMenuRadioItem({
     <DropdownMenuPrimitive.RadioItem
       className={cn(
         'capsule relative mb-1.5 flex cursor-pointer select-none items-center gap-2 px-3 py-1.5 outline-none last:mb-0',
-        'data-[state=checked]:border-leaf-d data-[state=checked]:from-[#d9f7c8] data-[state=checked]:to-[#a9e389]',
+        'data-[state=checked]:border-leaf-d data-[state=checked]:from-mine-1 data-[state=checked]:to-mine-2',
         'data-[highlighted]:brightness-105 data-[disabled]:opacity-50',
         className,
       )}

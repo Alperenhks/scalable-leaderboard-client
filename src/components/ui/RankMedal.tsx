@@ -9,7 +9,7 @@ interface Props {
 export function RankMedal({ rank, className }: Props) {
   const tone =
     rank === 1
-      ? 'from-[#ffd54a] to-[#e8a41d] border-[#a8620c] text-[#5a2d0c]'
+      ? 'from-coin-1 to-coin-2 border-amount text-[#5a2d0c]'
       : rank === 2
         ? 'from-[#e6eef7] to-[#adc0d2] border-[#6d8298] text-[#33475c]'
         : rank === 3

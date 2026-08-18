@@ -18,6 +18,7 @@ interface Props {
 
 const MODES: Array<{ id: DemoMode; label: string; hint: string }> = [
   { id: 'top', label: '👑 Zirvedeki oyuncu', hint: '1. sıra' },
+  { id: 'contender', label: '🛫 İlk 100 içinde', hint: '53. sıra' },
   { id: 'mid', label: '📊 Ortalama oyuncu', hint: '~2500. sıra' },
   { id: 'outside', label: '🎯 İlk 100 dışı', hint: '121. sıra' },
   { id: 'unranked', label: '🆕 Skoru olmayan', hint: 'sıralamada değil' },
@@ -34,7 +35,7 @@ export function PlayerSwitcher({ mode, busy = false, onSwitch }: Props) {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="gold" disabled={busy} className="gap-1.5">
-          <span className="max-w-[10rem] truncate">
+          <span className="max-w-[5.5rem] truncate sm:max-w-[10rem]">
             {busy ? 'Yükleniyor…' : (active?.label ?? '🎮 Demo oyuncu')}
           </span>
           <ChevronDown className="size-4 shrink-0" />

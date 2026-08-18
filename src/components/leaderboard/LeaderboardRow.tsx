@@ -20,10 +20,10 @@ function LeaderboardRowBase({ entry, isCurrentUser = false, estimatedPrize }: Pr
     <li
       aria-current={isCurrentUser ? 'true' : undefined}
       className={cn(
-        'capsule flex items-center gap-2.5 px-2.5 py-1.5',
+        'capsule flex items-center gap-1.5 px-1.5 py-1.5 sm:gap-2.5 sm:px-2.5',
         // Kendi satırın yeşil kapsül olur — listede gözden kaçmaz.
         isCurrentUser &&
-          'border-leaf-d bg-gradient-to-b from-[#d6f5c4] to-[#a9e389] ring-2 ring-leaf/50',
+          'border-leaf-d bg-gradient-to-b from-mine-1 to-mine-2 ring-2 ring-leaf/50',
       )}
     >
       <RankMedal rank={entry.rank} />
@@ -48,7 +48,7 @@ function LeaderboardRowBase({ entry, isCurrentUser = false, estimatedPrize }: Pr
         <MoneyValue
           minor={estimatedPrize}
           compact
-          className="tnum hidden w-16 shrink-0 text-right text-[11px] font-extrabold text-[#a8620c] sm:block"
+          className="tnum hidden w-16 shrink-0 text-right text-[11px] font-extrabold text-amount sm:block"
         />
       )}
     </li>

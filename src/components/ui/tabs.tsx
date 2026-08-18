@@ -37,7 +37,7 @@ export function TabsTrigger({
         'hover:text-cocoa',
         // Etkin sekme kabartma sarı düğme olur
         'data-[state=active]:border-[3px] data-[state=active]:border-bark',
-        'data-[state=active]:bg-gradient-to-b data-[state=active]:from-[#fff2cf] data-[state=active]:to-gold-2',
+        'data-[state=active]:bg-gradient-to-b data-[state=active]:from-gold-1 data-[state=active]:to-gold-2',
         'data-[state=active]:text-cocoa data-[state=active]:shadow-[inset_0_2px_0_rgb(255_255_255/0.7),0_3px_0_rgb(0_0_0/0.25)]',
         className,
       )}

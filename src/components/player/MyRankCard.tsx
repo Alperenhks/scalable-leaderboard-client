@@ -48,7 +48,7 @@ export function MyRankCard({ me, around, projectionMe, className }: Props) {
     <section
       aria-label="Senin sıralaman"
       className={cn(
-        'rounded-2xl border-[3px] border-leaf-d bg-gradient-to-b from-[#d9f7c8] to-[#a9e389] px-3 py-2.5',
+        'rounded-2xl border-[3px] border-leaf-d bg-gradient-to-b from-mine-1 to-mine-2 px-3 py-2.5',
         'shadow-[inset_0_2px_0_rgb(255_255_255/0.6),0_4px_0_rgb(0_0_0/0.22)]',
         className,
       )}
@@ -80,7 +80,7 @@ export function MyRankCard({ me, around, projectionMe, className }: Props) {
             </span>
             <MoneyValue
               minor={prizeMinor}
-              className="tnum text-sm font-extrabold text-[#a8620c]"
+              className="tnum text-sm font-extrabold text-amount"
             />
           </div>
         )}

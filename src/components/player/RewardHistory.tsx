@@ -23,7 +23,7 @@ export function RewardHistory({ rewards }: Props) {
             <span className="text-[11px] font-extrabold text-cocoa/60">{r.rank}.</span>
           )}
           {r.amount != null && (
-            <span className="tnum text-[12px] font-extrabold text-[#a8620c]">
+            <span className="tnum text-[12px] font-extrabold text-amount">
               {formatMinor(toMinor(r.amount))}
             </span>
           )}
@@ -31,7 +31,7 @@ export function RewardHistory({ rewards }: Props) {
       ))}
       <li className="flex items-center justify-between px-2 pt-1 text-[11px] font-extrabold text-cocoa/70">
         <span>Toplam kazanç</span>
-        <span className="text-[#a8620c]">
+        <span className="text-amount">
           {formatMinor(toMinor(rewards.totalEarned))}
         </span>
       </li>

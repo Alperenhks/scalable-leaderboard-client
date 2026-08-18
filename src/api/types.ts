@@ -103,7 +103,7 @@ export interface MeRewardsResponse {
 }
 
 /** Jüri için hazır demo personaları. */
-export type DemoMode = 'top' | 'mid' | 'outside' | 'unranked';
+export type DemoMode = 'top' | 'contender' | 'mid' | 'outside' | 'unranked';
 
 export interface IdentifyResponse {
   token: string;
