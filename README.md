@@ -70,9 +70,12 @@ bir denge.
 penceresinde aynı bileşen kullanılır; tek fark `isCurrentUser` prop'u. `key`
 olarak `userId` verilir, index değil — sıra değiştiğinde liste baştan çizilmez.
 
-**Ülke sekmesi istemcide filtrelenir.** Backend'de ülke filtresi yok
-(`?country=` 400 döner). Çekilmiş ilk 100 üzerinde `entry.country` ile
-filtrelenir — kapsamı bu yüzden ilk 100 ile sınırlıdır.
+**Ülke sıralaması sunucudan gelir.** `/leaderboard` ve `/leaderboard/around`
+uçları `country` parametresi alır; sıralama o ülkeyle sınırlanır ve sıra
+numaraları ülke içinde 1'den başlar. Böylece globalde 2476. olan oyuncu kendi
+ülkesinde 129/249 olarak görünür — ilk 100'e giremeyen oyuncunun ekranda
+anlamlı bir yeri olur. Geçersiz kod 400, bilinmeyen ülke boş liste döner.
+Ülke verisi yalnızca sekme açıldığında çekilir.
 
 **Ödül tutarları sunucudan gelir.** `GET /rewards/projection` tek kaynaktır;
 istemcide yeniden hesaplanmaz, böylece gösterilen tutar ödenecek tutardan

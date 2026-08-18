@@ -33,6 +33,8 @@ Frontend'de doğrulama üç katmanda yürüdü: derleme, canlı API'ye karşı �
 | Yenile düğmesi | Tıklama sonrası `fetch` sayacı | ✅ 6 istek |
 | Responsive kırılım | Derlenmiş CSS'te medya sorgusu | ✅ `40rem` ve `64rem` üretiliyor |
 | Bayrak CDN'i | `flagcdn` uçları `curl` ile | ✅ 200 / geçersiz kodda 404 |
+| Ülke filtresi | `?country=` canlı ölçüm (TR / ZZ / TURKEY) | ✅ 200 · boş liste · 400 |
+| Ülke içi sıralama | `mid` personası: global vs ülke sırası | ✅ Global **2476** → RU içinde **129/249** |
 
 ### Doğrulanamayan bir adım ve nasıl raporlandığı
 
@@ -71,7 +73,7 @@ Aynı şekilde emoji kullanımı da geliştiricinin kararıdır: emoji rozetleri
 |---|---|---|
 | **CORS nasıl çözülsün?** | Proxy kalksın, doğrudan backend'e bağlan | Vite dev proxy'si tamamen silindi; CORS'un backend'de çözülmesi gerektiği README'ye not düşüldü |
 | **Avatar nereden gelsin?** | `userId`'den deterministik türet | API avatar döndürmüyor; sahte fotoğraf yerine hash'ten renk + baş harf. Aynı oyuncu hep aynı rozeti alır |
-| **Ülke sekmesi olsun mu?** | Evet, istemci tarafı filtre | Backend'de ülke filtresi yok (`?country=` **400** döner); ilk 100 üzerinde filtreleniyor, kapsam sınırı README'de |
+| **Ülke sekmesi olsun mu?** | Evet | Önce istemci tarafı filtre ile yapıldı; backend ülke ucunu ekleyince sunucu tarafı filtreye geçildi (aşağıya bakınız) |
 | **Demo persona sayısı** | Dördü de kalsın | `mid` (#2476) ile `outside` (#121) aynı ekranı farklı derinlikte gösteriyor |
 | **Ağ trafiği ne olsun?** | Polling tamamen kalksın | Talep açıktı: istek yalnızca tetiklendiğinde atılmalı. Zamanlayıcılar silindi, yerine manuel yenile düğmesi kondu |
 | **Logo** | Marka logosu kullanılsın | `public/logo.png`; favicon logodan örneklenen `#ef6723` ile yeniden çizildi |
@@ -123,6 +125,47 @@ Geliştirici ağ panelindeki kırmızı satırları fark etti ve bunların ne ol
 Teşhis: React StrictMode dev'de bileşenleri iki kez mount ediyor, veri hook'unun cleanup'ı ilk turu `abort()` ediyordu. Yani beklenen davranıştı ve üretim derlemesinde hiç oluşmuyordu.
 
 Teknik olarak zararsız olmasına rağmen geliştirici bu satırların kalmamasını istedi; gerekçe, değerlendirmede performans göstergelerine dikkat edilmesiydi. Burada iki yol vardı: StrictMode'u kapatmak (gerçek cleanup hatalarını gizlerdi) ya da isteği tekilleştirmek. **İkincisi seçildi**: `client.ts`'te uçuştaki GET istekleri paylaşılıyor, ikinci mount yeni bağlantı açmıyor. Semptom yerine sebep giderildi ve StrictMode'un koruması korundu.
+
+### Belgedeki bir iddianın geliştirici tarafından düzeltilmesi
+
+Belgenin ilk halinde şöyle bir madde vardı: *"Backend'de ülke filtresi yok
+(`?country=` 400 döner); ilk 100 üzerinde istemcide filtreleniyor."*
+
+Bu, yazıldığı anda **ölçülmüş ve doğruydu** — `?country=TR` gerçekten 400
+dönüyordu ve altı farklı parametre adı ile altı ayrı uç denenmiş, hepsi
+400/404 vermişti.
+
+Geliştirici bu maddeye itiraz etti: ülke sıralaması çalışıyordu. Araç
+iddiasını savunmak yerine yeniden ölçtü ve **hâlâ 400 aldı**; ardından iki
+olasılığı ayırıp geliştiriciye sordu: backend'e yeni bir uç mu eklendi, yoksa
+kastedilen şey arayüzdeki sekmenin çalışması mıydı?
+
+Cevap birincisiydi. Backend bu sırada güncellenmişti ve ölçüm yeniden
+yapıldığında filtre canlıydı:
+
+```
+GET /leaderboard?country=TR&limit=3  →  200, total: 256, sıralar 1'den başlıyor
+GET /leaderboard?country=ZZ          →  200, total: 0, boş liste
+GET /leaderboard?country=TURKEY      →  400
+```
+
+Bunun üzerine istemci tarafı filtre **tamamen kaldırıldı** ve sunucu filtresine
+geçildi. Fark yalnızca teknik değil, işlevseldi:
+
+| | İstemci filtresi (eski) | Sunucu filtresi (yeni) |
+|---|---|---|
+| Kapsam | Yalnızca global ilk 100 içindeki hemşehriler | Ülkedeki **tüm** oyuncular |
+| Sıra numarası | Global sıra (ör. 2476) | Ülke içi sıra (ör. 129) |
+| 150. sıradaki oyuncu | Listede **hiç görünmüyordu** | Görünüyor |
+
+Canlı doğrulama, özelliğin asıl değerini gösteriyor: globalde **2476.** olan bir
+oyuncu kendi ülkesinde **129/249**. İlk 100'e giremeyen oyuncunun ekranda
+anlamlı bir yeri olması, bu ekranın çözmesi gereken problemin ta kendisiydi.
+
+Buradaki asıl nokta iki yönlüdür. Araç doğrulanmış bir ölçüme dayandığı için
+iddiasını hemen terk etmedi, yeniden ölçtü — ama ölçüm ile geliştiricinin
+bildiği arasındaki çelişkiyi **varsayımla kapatmadı**, ayrıştırıcı bir soru
+sordu. Belge, ölçüm tekrarlandıktan sonra düzeltildi.
 
 ---
 
@@ -180,7 +223,7 @@ Doğrulama disiplininin bir parçası da, kapatılmayanı açıkça söylemektir
 
 - **Mobil düzen gerçek cihazda görsel olarak doğrulanmadı.** Kırılım noktalarının derlenmiş CSS'te üretildiği doğrulandı, ancak dar ekranda göz kontrolü yapılamadı (tarayıcı eklentisi pencereyi boyutlandıramadı).
 - **Backend CORS başlığı göndermiyor.** API `Access-Control-Allow-Credentials: true` gönderirken `Access-Control-Allow-Origin` göndermiyor; bu haliyle `curl` çalışır ama tarayıcı tüm istekleri bloklar. Proxy geliştirici kararıyla kaldırıldığı için bu, backend'de çözülmesi gereken açık bir maddedir.
-- **"Ülkem" sekmesi yalnızca ilk 100'ü kapsar.** Backend'de ülke filtresi olmadığı için tüm oyuncular içinde ülke sıralaması yapılamıyor. Gerçek ülke sıralaması ayrı bir Redis ZSET gerektirir.
+- ~~**"Ülkem" sekmesi yalnızca ilk 100'ü kapsar.**~~ **Kapatıldı.** Backend'e `country` parametresi eklendi; sıralama artık sunucuda, ülkedeki tüm oyuncular üzerinde yapılıyor ve sıra numaraları ülke içinde 1'den başlıyor.
 - **Otomatik test yok.** Doğrulama derleme, canlı API ölçümü ve tarayıcı kontrolüyle yapıldı; birim/bileşen testi yazılmadı.
 - **Veri artık canlı tazelenmiyor.** Polling geliştirici kararıyla kaldırıldı. Sıralama değiştiğinde ekran kendiliğinden güncellenmez; kullanıcı yenile düğmesine basmalıdır. Ağ trafiği karşılığında canlılıktan feragat edilmiştir.
 

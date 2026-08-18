@@ -41,20 +41,21 @@ export default function App() {
     ready,
   } = useSession();
   const [submitting, setSubmitting] = useState(false);
+  const [tab, setTab] = useState<'top' | 'around' | 'country'>('top');
 
   // Token değiştiğinde (persona geçişi) yetkili uçlar yeniden çekilir.
   const authDeps = useMemo(() => [epoch], [epoch]);
 
   // Hiçbiri kendi kendine tekrar etmez; tazeleme yalnızca istendiğinde olur.
   const board = useResource(
-    useCallback((signal: AbortSignal) => getLeaderboard(TOP_LIMIT, signal), []),
+    useCallback((signal: AbortSignal) => getLeaderboard(TOP_LIMIT, undefined, signal), []),
   );
   const season = useResource(
     useCallback((signal: AbortSignal) => getSeason(signal), []),
   );
   // Yetkili uçlar: token hazır değilken istek atmak 401 döndürür.
   const around = useResource(
-    useCallback((signal: AbortSignal) => getAround(signal), []),
+    useCallback((signal: AbortSignal) => getAround(undefined, signal), []),
     authDeps,
     { enabled: ready },
   );
@@ -79,13 +80,26 @@ export default function App() {
   // Ödül tablosu: sunucu tutarlarını userId ile eşleştirir.
   const prizes = useMemo(() => buildPrizeTable(projection.data), [projection.data]);
 
-  // Ülke sekmesi: backend'de ülke filtresi yok (?country= 400 döner),
-  // bu yüzden çekilmiş ilk 100 üzerinde istemcide filtreleniyor.
+  // Ülke sıralaması sunucudan gelir: sıra numaraları ülke içinde 1'den başlar,
+  // yani globalde 2476. olan oyuncu kendi ülkesinde 129. olarak görünür.
+  // Sekme açılmadan istek atılmaz.
   const myCountry = me.data?.country ?? null;
-  const countryEntries = useMemo(() => {
-    if (!myCountry) return [];
-    return (board.data?.entries ?? []).filter((e) => e.country === myCountry);
-  }, [board.data, myCountry]);
+  const countryDeps = useMemo(() => [myCountry, epoch], [myCountry, epoch]);
+
+  const countryBoard = useResource(
+    useCallback(
+      (signal: AbortSignal) => getLeaderboard(TOP_LIMIT, myCountry, signal),
+      [myCountry],
+    ),
+    countryDeps,
+    { enabled: ready && !!myCountry && tab === 'country' },
+  );
+
+  const countryAround = useResource(
+    useCallback((signal: AbortSignal) => getAround(myCountry, signal), [myCountry]),
+    countryDeps,
+    { enabled: ready && !!myCountry && tab === 'country' },
+  );
 
   const currentUserId = identity?.userId ?? me.data?.userId ?? null;
   const initialLoading = board.loading && !board.data;
@@ -189,16 +203,16 @@ export default function App() {
               ))}
             </div>
           ) : (
-            <Tabs defaultValue="top">
+            <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)}>
               <TabsList>
                 <TabsTrigger value="top">İlk 100</TabsTrigger>
                 <TabsTrigger value="around">Çevrem</TabsTrigger>
                 <TabsTrigger value="country">
                   <CountryTag country={myCountry} />
                   Ülkem
-                  {myCountry && (
+                  {countryBoard.data && (
                     <span className="rounded-full bg-cocoa/15 px-1.5 text-[10px]">
-                      {countryEntries.length}
+                      {countryBoard.data.total}
                     </span>
                   )}
                 </TabsTrigger>
@@ -238,20 +252,43 @@ export default function App() {
               </TabsContent>
 
               <TabsContent value="country">
-                <div className="max-h-[26rem] overflow-y-auto pr-1">
-                  {myCountry ? (
-                    <LeaderboardList
-                      entries={countryEntries}
-                      currentUserId={currentUserId}
-                      prizes={prizes}
-                      emptyMessage={`İlk ${TOP_LIMIT} içinde ${myCountry} oyuncusu yok.`}
-                    />
-                  ) : (
-                    <p className="px-4 py-10 text-center text-sm font-bold text-cocoa/60">
-                      Hesabında ülke bilgisi tanımlı değil.
-                    </p>
-                  )}
-                </div>
+                {!myCountry ? (
+                  <p className="px-4 py-10 text-center text-sm font-bold text-cocoa/60">
+                    Hesabında ülke bilgisi tanımlı değil.
+                  </p>
+                ) : countryBoard.loading ? (
+                  <div className="space-y-2">
+                    {Array.from({ length: 6 }, (_, i) => (
+                      <div
+                        key={i}
+                        className="h-11 animate-pulse rounded-full border-2 border-gold-4/50 bg-gold-1/60 motion-reduce:animate-none"
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <>
+                    {/* Ülke içindeki kendi sıran — global sıradan farklıdır.
+                        İlk 100'de görünmeyen oyuncu burada anlamlı yerde olabilir. */}
+                    {countryAround.data?.rank != null && (
+                      <p className="mb-3 rounded-xl border-2 border-bark/25 bg-gold-1/60 px-3 py-2 text-center text-[11px] font-bold text-cocoa/75">
+                        {myCountry} sıralamasında{' '}
+                        <strong className="text-[#a8620c]">
+                          {countryAround.data.rank}.
+                        </strong>{' '}
+                        sıradasın · {tr.format(countryAround.data.total)} oyuncu
+                      </p>
+                    )}
+                    <div className="max-h-[26rem] overflow-y-auto pr-1">
+                      <LeaderboardList
+                        entries={countryBoard.data?.entries ?? []}
+                        currentUserId={currentUserId}
+                        // Ödül tahminleri global sıraya göre; ülke sıralamasında
+                        // gösterilmez, yanıltıcı olurdu.
+                        emptyMessage={`${myCountry} sıralamasında henüz oyuncu yok.`}
+                      />
+                    </div>
+                  </>
+                )}
               </TabsContent>
             </Tabs>
           )}

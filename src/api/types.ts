@@ -18,16 +18,25 @@ export interface LeaderboardEntry {
 
 export interface LeaderboardResponse {
   seasonId: string;
+  /** Ülke filtresi uygulandıysa ISO kodu, global sorguda null. */
+  country: CountryCode;
+  /** Filtre varsa o ülkedeki toplam oyuncu, yoksa genel toplam. */
   total: number;
   limit: number;
   offset: number;
+  /** Ülke filtresinde sıra numaraları ülke içinde 1'den başlar. */
   entries: LeaderboardEntry[];
 }
 
 export interface AroundResponse {
   seasonId: string;
+  /** Ülke filtresi uygulandıysa ISO kodu, global sorguda null. */
+  country: CountryCode;
   userId: string;
-  /** Oyuncu hiç oynamamışsa null — bu `0` DEĞİLDİR. */
+  /**
+   * Oyuncu hiç oynamamışsa null — bu `0` DEĞİLDİR.
+   * Ülke filtresinde bu sıra ülke içindedir (global sıra değil).
+   */
   rank: number | null;
   score: number;
   total: number;

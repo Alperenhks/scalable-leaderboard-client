@@ -1,5 +1,6 @@
 import type {
   AroundResponse,
+  CountryCode,
   DemoMode,
   IdentifyResponse,
   LeaderboardResponse,
@@ -137,12 +138,27 @@ export const identify = (mode?: DemoMode, signal?: AbortSignal) =>
     signal,
   });
 
-/** Backend `limit` üst sınırı 100'dür; daha fazlası 400 döner. */
-export const getLeaderboard = (limit = 100, signal?: AbortSignal) =>
-  request<LeaderboardResponse>(`/leaderboard?limit=${limit}`, { signal });
+/**
+ * Backend `limit` üst sınırı 100'dür; daha fazlası 400 döner.
+ *
+ * `country` verilirse sıralama o ülkeyle sınırlanır ve sıra numaraları
+ * ülke içinde 1'den başlar. Geçersiz kod 400, bilinmeyen ülke boş liste döner.
+ */
+export const getLeaderboard = (
+  limit = 100,
+  country?: CountryCode,
+  signal?: AbortSignal,
+) => {
+  const qs = new URLSearchParams({ limit: String(limit) });
+  if (country) qs.set('country', country);
+  return request<LeaderboardResponse>(`/leaderboard?${qs}`, { signal });
+};
 
-export const getAround = (signal?: AbortSignal) =>
-  request<AroundResponse>('/leaderboard/around', { auth: true, signal });
+/** `country` verilirse pencere o ülke sıralaması içinde hesaplanır. */
+export const getAround = (country?: CountryCode, signal?: AbortSignal) => {
+  const qs = country ? `?${new URLSearchParams({ country })}` : '';
+  return request<AroundResponse>(`/leaderboard/around${qs}`, { auth: true, signal });
+};
 
 /**
  * Ödül tahminleri. Token varsa `me` alanı da dolu gelir.
