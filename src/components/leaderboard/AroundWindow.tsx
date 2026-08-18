@@ -41,7 +41,7 @@ export function AroundWindow({
       <div className="px-4 py-8 text-center">
         <p className="text-lg font-extrabold text-cocoa">Henüz sıralamada değilsin</p>
         <p className="mx-auto mt-1.5 max-w-xs text-[13px] font-semibold text-cocoa/70">
-          İlk uçağını indir, {tr.format(around.total)} oyuncunun arasına gir!
+          İlk kalkışını yap, {tr.format(around.total)} pilotun arasına katıl.
         </p>
         {onSubmitScore && (
           <Button
@@ -51,7 +51,7 @@ export function AroundWindow({
             onClick={onSubmitScore}
             disabled={submitting}
           >
-            {submitting ? 'Gönderiliyor…' : 'Skor Gönder'}
+            {submitting ? 'Kalkış yapılıyor…' : 'İlk Kalkışı Yap'}
           </Button>
         )}
         {submitError && (
@@ -98,16 +98,16 @@ export function AroundWindow({
       <p className="mt-3 rounded-xl border-2 border-bark/25 bg-gold-1/60 px-3 py-2 text-center text-[11px] font-bold text-cocoa/75">
         {projectionMe?.isEligible ? (
           <>
-            🎉 Ödül bölgesindesin ·{' '}
+            🏆 Ödül bölgesindesin ·{' '}
           </>
         ) : pointsToEligible != null ? (
           <>
             Ödül bölgesine{' '}
             <strong className="text-amount">{tr.format(pointsToEligible)} puan</strong>{' '}
-            kaldı ·{' '}
+            ·{' '}
           </>
         ) : null}
-        toplam {tr.format(around.total)} oyuncu · skorun {formatScoreFull(around.score)}
+        {tr.format(around.total)} pilot arasında · skorun {formatScoreFull(around.score)}
       </p>
     </div>
   );

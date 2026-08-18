@@ -88,14 +88,14 @@ export function MyRankCard({ me, around, projectionMe, className }: Props) {
 
       <p className="mt-2 border-t-2 border-dashed border-leaf-d/40 pt-1.5 text-[11px] font-bold text-cocoa/70">
         {unranked
-          ? 'Henüz skorun yok — ilk uçağını indir, tabloya gir!'
+          ? 'Pistte henüz uçağın yok — ilk kalkışını yap, tabloya gir.'
           : projectionMe?.isEligible
-            ? '🎉 Ödül bölgesindesin, bu sezon kazanıyorsun!'
+            ? '🏆 Ödül bölgesindesin — sezon böyle biterse kazanıyorsun.'
             : gapAbove != null
-              ? `↑ Bir üstekine ${tr.format(gapAbove)} puan kaldı`
+              ? `Öndeki uçağa ${tr.format(gapAbove)} puan var.`
               : projectionMe?.pointsToEligible != null
-                ? `Ödül bölgesine ${tr.format(projectionMe.pointsToEligible)} puan kaldı`
-                : `Skorun ${formatScoreFull(me.score)} · sıralaman güncelleniyor`}
+                ? `Ödül bölgesine ${tr.format(projectionMe.pointsToEligible)} puan kaldı.`
+                : `Skorun ${formatScoreFull(me.score)}.`}
       </p>
     </section>
   );

@@ -185,7 +185,7 @@ export default function App() {
           ) : initialLoading ? (
             <div className="space-y-2">
               <p className="pb-1 text-center text-[11px] font-bold text-cocoa/60">
-                Sunucu uyanıyor, ilk yükleme yarım dakikayı bulabilir…
+                Kule bağlantısı kuruluyor, ilk yükleme yarım dakikayı bulabilir…
               </p>
               {Array.from({ length: 8 }, (_, i) => (
                 <div
@@ -259,11 +259,11 @@ export default function App() {
                         İlk 100'de görünmeyen oyuncu burada anlamlı yerde olabilir. */}
                     {countryAround.data?.rank != null && (
                       <p className="mb-3 rounded-xl border-2 border-bark/25 bg-gold-1/60 px-3 py-2 text-center text-[11px] font-bold text-cocoa/75">
-                        {formatCountry(myCountry)} sıralamasında{' '}
-                        <strong className="text-[#a8620c]">
+                        {formatCountry(myCountry)} pistinde{' '}
+                        <strong className="text-amount">
                           {countryAround.data.rank}.
                         </strong>{' '}
-                        sıradasın · {tr.format(countryAround.data.total)} oyuncu
+                        sıradasın · {tr.format(countryAround.data.total)} pilot
                       </p>
                     )}
                     <div className="max-h-[26rem] overflow-y-auto pr-1">
@@ -272,7 +272,7 @@ export default function App() {
                         currentUserId={currentUserId}
                         // Ödül tahminleri global sıraya göre; ülke sıralamasında
                         // gösterilmez, yanıltıcı olurdu.
-                        emptyMessage={`${formatCountry(myCountry)} sıralamasında henüz oyuncu yok.`}
+                        emptyMessage={`${formatCountry(myCountry)} pistinde henüz pilot yok.`}
                       />
                     </div>
                   </>
