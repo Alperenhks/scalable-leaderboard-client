@@ -134,16 +134,22 @@ export default function App() {
 
   return (
     <div className="mx-auto w-full max-w-5xl px-3 py-6 sm:px-4 sm:py-8">
-      <header className="mb-5 flex items-center justify-between gap-3">
-        {/* Logonun yazısı beyaz; ahşap zeminde kaybolmasın diye koyu bir
-            levhanın üstünde duruyor. */}
-        <span className="inline-flex min-w-0 items-center gap-1.5 rounded-xl border-[3px] border-bark bg-cocoa/85 px-2.5 py-1.5 shadow-[0_4px_0_rgb(0_0_0/0.3)] sm:px-3">
-          <span aria-hidden="true" className="text-base sm:text-lg">
-            ✈️
+      <header className="mb-3 flex items-center justify-between gap-3">
+        {/* Oyun kimliği: koyu gövde üzerinde açık yazı — gece gökyüzü
+            zemininde okunur kalsın diye. Alt kenardaki ince şerit pist
+            çizgisini andırır. */}
+        <span className="relative inline-flex min-w-0 items-center gap-2 overflow-hidden rounded-xl border-[3px] border-sky-d bg-gradient-to-b from-[#1d3f6b] to-[#12304f] px-2.5 py-1.5 shadow-[0_4px_0_rgb(0_0_0/0.35)] sm:px-3.5">
+          <span aria-hidden="true" className="text-sm sm:text-base">
+            🛩️
           </span>
-          <span className="truncate text-[13px] font-extrabold uppercase tracking-wide text-cream sm:text-base">
+          <span className="truncate text-[13px] font-extrabold uppercase tracking-wider text-cream sm:text-[15px]">
             Airport Master
           </span>
+          {/* Pist şeridi */}
+          <span
+            aria-hidden="true"
+            className="absolute inset-x-2 bottom-0 h-[2px] bg-[repeating-linear-gradient(90deg,var(--color-coin-1)_0_10px,transparent_10px_20px)] opacity-70"
+          />
         </span>
         <div className="flex items-center gap-2">
           <Button
@@ -164,13 +170,13 @@ export default function App() {
         </div>
       </header>
 
-      <div className="mb-6">
+      <div className="mb-4">
         <SeasonHeader season={season.data} />
       </div>
 
-      <div className="grid min-w-0 items-start gap-8 lg:grid-cols-[minmax(0,1fr)_19rem]">
+      <div className="grid min-w-0 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_19rem]">
         {/* Ana pano */}
-        <GamePanel title="Liderlik Tablosu">
+        <GamePanel title="Liderlik Tablosu" icon="🛫">
           <div className="mb-3">
             <MyRankCard
               me={me.data}
@@ -295,12 +301,12 @@ export default function App() {
 
         {/* Yan pano: ödül dağılımı ve geçmiş kazanımlar — hepsi API verisi */}
         <div className="space-y-8">
-          <GamePanel title="Ödüller">
+          <GamePanel title="Ödüller" icon="🏆">
             <PrizeBreakdown season={season.data} projection={projection.data} />
           </GamePanel>
 
           {hasRewards && (
-            <GamePanel title="Geçmişin">
+            <GamePanel title="Geçmişin" icon="🧳">
               <RewardHistory rewards={rewards.data} />
             </GamePanel>
           )}
