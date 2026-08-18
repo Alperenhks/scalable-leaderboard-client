@@ -9,15 +9,10 @@ import type {
 } from './types';
 
 /**
- * Doğrudan backend'e bağlanır.
+ * Doğrudan backend'e bağlanır. Farklı bir ortam için VITE_API_BASE ver.
  *
- * NOT: Backend şu an `Access-Control-Allow-Origin` göndermiyor; sadece
- * `Access-Control-Allow-Credentials: true` dönüyor. Bu düzeltilene kadar
- * tarayıcı isteklerini CORS'tan bloklar. Backend tarafında:
- *   app.enableCors({ origin: true, credentials: true })
- *
- * Geçici olarak same-origin proxy kullanmak istersen VITE_API_BASE=/api ver
- * (vite.config.ts'teki dev proxy devrede kalır).
+ * Backend'in `Access-Control-Allow-Origin` göndermesi gerekir; aksi halde
+ * tarayıcı istekleri CORS'tan bloklar (curl çalışır, tarayıcı çalışmaz).
  */
 export const API_BASE =
   import.meta.env.VITE_API_BASE ??

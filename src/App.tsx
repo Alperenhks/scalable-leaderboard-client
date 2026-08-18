@@ -16,6 +16,7 @@ import { RewardHistory } from '@/components/player/RewardHistory';
 import { PrizeBreakdown } from '@/components/season/PrizeBreakdown';
 import { SeasonHeader } from '@/components/season/SeasonHeader';
 import { Button } from '@/components/ui/button';
+import { CountryTag } from '@/components/ui/CountryTag';
 import { GamePanel } from '@/components/ui/GamePanel';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { usePolling } from '@/hooks/usePolling';
@@ -164,7 +165,8 @@ export default function App() {
                 <TabsTrigger value="top">İlk 100</TabsTrigger>
                 <TabsTrigger value="around">Çevrem</TabsTrigger>
                 <TabsTrigger value="country">
-                  {myCountry ?? 'Ülkem'}
+                  <CountryTag country={myCountry} />
+                  Ülkem
                   {myCountry && (
                     <span className="rounded-full bg-cocoa/15 px-1.5 text-[10px]">
                       {countryEntries.length}

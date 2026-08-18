@@ -60,10 +60,10 @@ export function MyRankCard({ me, around, prizes, className }: Props) {
 
         <div className="min-w-0 flex-1">
           <span className="flex items-center gap-1.5">
+            <CountryTag country={me.country} />
             <span className="truncate text-sm font-extrabold text-cocoa">
               {me.username}
             </span>
-            <CountryTag country={me.country} />
             <span className="shrink-0 rounded-full border-2 border-leaf-d bg-leaf px-1.5 text-[9px] font-extrabold uppercase text-cream">
               sen
             </span>

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { CountryCode } from '@/api/types';
 import { cn } from '@/lib/utils';
 
@@ -6,17 +7,35 @@ interface Props {
   className?: string;
 }
 
-/** Ülke iki harfli ISO koduyla yazılır. `null` güvenli. */
+/**
+ * Ülke bayrağı — flagcdn'den PNG olarak gelir.
+ *
+ * `country` null olabilir ya da CDN'de karşılığı olmayabilir (404); bu
+ * durumda hiçbir şey çizilmez, kırık görsel çıkmaz.
+ */
 export function CountryTag({ country, className }: Props) {
+  const [failed, setFailed] = useState(false);
+  const code = country?.toLowerCase();
+
+  if (!code || !/^[a-z]{2}$/.test(code) || failed) return null;
+
   return (
-    <span
+    <img
+      // 2x için srcSet — retina ekranda bulanıklaşmasın
+      src={`https://flagcdn.com/w20/${code}.png`}
+      srcSet={`https://flagcdn.com/w40/${code}.png 2x`}
+      width={18}
+      height={13}
+      alt={country ?? ''}
+      title={country ?? undefined}
+      // Liste kısa (en fazla 100 satır); lazy yerine eager ile bayraklar
+      // kaydırma beklemeden görünür.
+      decoding="async"
+      onError={() => setFailed(true)}
       className={cn(
-        'shrink-0 rounded-md border-2 border-gold-4/60 bg-gold-1 px-1.5 text-[10px] font-extrabold tracking-wide text-cocoa/70',
+        'inline-block h-[13px] w-[18px] shrink-0 rounded-[2px] object-cover ring-1 ring-cocoa/30',
         className,
       )}
-      aria-label={country ? `Ülke: ${country}` : 'Ülke belirtilmemiş'}
-    >
-      {country?.toUpperCase() ?? '··'}
-    </span>
+    />
   );
 }

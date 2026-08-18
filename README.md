@@ -20,27 +20,19 @@ npm run dev      # http://localhost:5173
 İstemci doğrudan backend'e bağlanır:
 `https://scalable-leaderboard-engine.onrender.com/api`
 
-> **Backend'de yapılması gereken:** API şu an `Access-Control-Allow-Credentials: true`
-> gönderiyor ama `Access-Control-Allow-Origin` göndermiyor. Bu haliyle tarayıcı
-> tüm istekleri CORS'tan bloklar (curl ile çalışır, tarayıcıda çalışmaz).
-> NestJS tarafında:
->
-> ```ts
-> app.enableCors({ origin: true, credentials: true });
-> ```
-
-Backend düzeltilene kadar geliştirmede same-origin proxy kullanılabilir —
-`vite.config.ts` içindeki dev proxy hazır:
-
-```bash
-VITE_API_BASE=/api npm run dev
-```
-
 Farklı bir ortama bağlanmak için:
 
 ```bash
 VITE_API_BASE=https://baska-ortam.example.com/api npm run build
 ```
+
+> **Backend'de gereken CORS ayarı:** API'nin `Access-Control-Allow-Origin`
+> göndermesi gerekir. Göndermezse tarayıcı tüm istekleri bloklar — curl ile
+> çalışır ama tarayıcıda çalışmaz. NestJS tarafında:
+>
+> ```ts
+> app.enableCors({ origin: true, credentials: true });
+> ```
 
 ## Ekranlar
 
@@ -79,6 +71,10 @@ olarak `userId` verilir, index değil — sıra değiştiğinde liste baştan ç
 **Ülke sekmesi istemcide filtrelenir.** Backend'de ülke filtresi yok
 (`?country=` 400 döner). Çekilmiş ilk 100 üzerinde `entry.country` ile
 filtrelenir — kapsamı bu yüzden ilk 100 ile sınırlıdır.
+
+**Bayraklar flagcdn'den gelir.** `entry.country` ISO kodu
+`https://flagcdn.com/w20/{kod}.png` adresine çevrilir (retina için `w40` 2x).
+Kod yoksa ya da CDN 404 dönerse bayrak hiç çizilmez — kırık görsel çıkmaz.
 
 **Avatarlar `userId`'den türetilir.** API avatar alanı döndürmüyor; foto
 uydurmak yerine `userId` hash'inden deterministik renk ve baş harf üretilir.

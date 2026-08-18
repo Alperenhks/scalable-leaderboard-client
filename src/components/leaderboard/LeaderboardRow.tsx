@@ -30,10 +30,10 @@ function LeaderboardRowBase({ entry, isCurrentUser = false, estimatedPrize }: Pr
       <PlayerAvatar userId={entry.userId} username={entry.username} />
 
       <span className="flex min-w-0 flex-1 items-center gap-1.5">
+        <CountryTag country={entry.country} />
         <span className="truncate text-[13px] font-bold text-cocoa">
           {entry.username}
         </span>
-        <CountryTag country={entry.country} />
         {isCurrentUser && (
           <span className="shrink-0 rounded-full border-2 border-leaf-d bg-leaf px-1.5 text-[9px] font-extrabold uppercase text-cream">
             sen
