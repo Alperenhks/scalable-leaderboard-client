@@ -68,20 +68,26 @@ export function AroundWindow({
   // kimse olmadığı için index'e göre arama yanlış olur.
   const rows = around.neighbours;
   const firstWindowRank = rows[0]?.rank ?? around.rank;
-  // Pencere ilk 100'ün dışındaysa arada atlanan sıralar var demektir.
+  // Pencere ilk 100'ün dışındaysa, ilk 100'ün sonu ile pencerenin başlangıcı
+  // arasında gösterilmeyen sıralar var demektir.
   const skipped = Math.max(0, firstWindowRank - topWindowSize - 1);
+  const gapStart = topWindowSize + 1;
+  const gapEnd = firstWindowRank - 1;
   // Sunucu "ödül bölgesine kaç puan" diyor; sıra farkından daha somut.
   const pointsToEligible = projectionMe?.pointsToEligible ?? null;
 
   return (
     <div>
-      {/* Kopukluk göstergesi: kullanıcı sıraların atlandığını görmeli.
-          Pencere zaten ilk 100'ün içindeyse atlanan sıra yok, gösterme. */}
+      {/* Kopukluk göstergesi: bu pencere ilk 100'ün devamı DEĞİLDİR, arada
+          gösterilmeyen sıralar vardır. Hangi aralığın atlandığı açıkça
+          yazılır — yalnızca "17 sıra atlandı" demek, kullanıcının ilk 100'ü
+          görmediği bu sekmede neyin atlandığını belirsiz bırakıyordu.
+          Pencere zaten ilk 100'ün içindeyse atlanan sıra yok, gösterilmez. */}
       {skipped > 0 && (
         <div className="mb-2.5 flex items-center gap-2 px-1">
           <span className="h-1 flex-1 rounded-full border-b-2 border-dashed border-bark/35" />
           <span className="rounded-full border-2 border-bark/30 bg-gold-1/70 px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-cocoa/70">
-            {tr.format(skipped)} sıra atlandı
+            {tr.format(gapStart)}–{tr.format(gapEnd)}. sıralar gösterilmiyor
           </span>
           <span className="h-1 flex-1 rounded-full border-b-2 border-dashed border-bark/35" />
         </div>
