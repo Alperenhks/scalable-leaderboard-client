@@ -22,6 +22,7 @@ import { GamePanel } from '@/components/ui/GamePanel';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useResource } from '@/hooks/useResource';
 import { useSession } from '@/hooks/useSession';
+import { formatCountry } from '@/lib/format';
 import { buildPrizeTable } from '@/lib/prize';
 
 const TOP_LIMIT = 100;
@@ -194,11 +195,6 @@ export default function App() {
                 <TabsTrigger value="country">
                   <CountryTag country={myCountry} />
                   Ülkem
-                  {countryBoard.data && (
-                    <span className="rounded-full bg-cocoa/15 px-1.5 text-[10px]">
-                      {countryBoard.data.total}
-                    </span>
-                  )}
                 </TabsTrigger>
               </TabsList>
 
@@ -255,7 +251,7 @@ export default function App() {
                         İlk 100'de görünmeyen oyuncu burada anlamlı yerde olabilir. */}
                     {countryAround.data?.rank != null && (
                       <p className="mb-3 rounded-xl border-2 border-bark/25 bg-gold-1/60 px-3 py-2 text-center text-[11px] font-bold text-cocoa/75">
-                        {myCountry} sıralamasında{' '}
+                        {formatCountry(myCountry)} sıralamasında{' '}
                         <strong className="text-[#a8620c]">
                           {countryAround.data.rank}.
                         </strong>{' '}
@@ -268,7 +264,7 @@ export default function App() {
                         currentUserId={currentUserId}
                         // Ödül tahminleri global sıraya göre; ülke sıralamasında
                         // gösterilmez, yanıltıcı olurdu.
-                        emptyMessage={`${myCountry} sıralamasında henüz oyuncu yok.`}
+                        emptyMessage={`${formatCountry(myCountry)} sıralamasında henüz oyuncu yok.`}
                       />
                     </div>
                   </>
