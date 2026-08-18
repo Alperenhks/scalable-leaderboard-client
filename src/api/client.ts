@@ -10,15 +10,19 @@ import type {
   SeasonResponse,
 } from './types';
 
+const DEFAULT_API_BASE = 'https://scalable-leaderboard-engine.onrender.com/api';
+
 /**
- * Doğrudan backend'e bağlanır. Farklı bir ortam için VITE_API_BASE ver.
+ * Backend adresi. `VITE_API_BASE` ile ortam başına değiştirilebilir.
  *
- * Backend'in `Access-Control-Allow-Origin` göndermesi gerekir; aksi halde
- * tarayıcı istekleri CORS'tan bloklar (curl çalışır, tarayıcı çalışmaz).
+ * Değişken tanımsız ya da boş bırakılırsa üretim backend'ine düşer — Vercel'de
+ * boş bir değişken tanımlanırsa uygulamanın kırılmaması için `??` değil
+ * `trim()` kontrolü yapılır. Sondaki eğik çizgi temizlenir, çünkü yol
+ * parçaları `/leaderboard` gibi eğik çizgiyle başlar.
  */
-export const API_BASE =
-  import.meta.env.VITE_API_BASE ??
-  'https://scalable-leaderboard-engine.onrender.com/api';
+export const API_BASE = (
+  import.meta.env.VITE_API_BASE?.trim() || DEFAULT_API_BASE
+).replace(/\/+$/, '');
 
 const TOKEN_KEY = 'panteon.token';
 

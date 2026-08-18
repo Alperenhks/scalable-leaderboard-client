@@ -35,6 +35,8 @@ Frontend'de doğrulama üç katmanda yürüdü: derleme, canlı API'ye karşı �
 | Bayrak CDN'i | `flagcdn` uçları `curl` ile | ✅ 200 / geçersiz kodda 404 |
 | Ülke filtresi | `?country=` canlı ölçüm (TR / ZZ / TURKEY) | ✅ 200 · boş liste · 400 |
 | Ülke içi sıralama | `mid` personası: global vs ülke sırası | ✅ Global **2476** → RU içinde **129/249** |
+| CORS (üretim) | `*.vercel.app` origin'leriyle preflight + GET | ✅ Başlık dönüyor; whitelist dışına dönmüyor |
+| Üretim derlemesi | `vite preview`, proxy yok, canlı backend | ✅ Tüm ekranlar çalıştı |
 
 ### Doğrulanamayan bir adım ve nasıl raporlandığı
 
@@ -206,6 +208,35 @@ Aynı şekilde `neighbours`, `projection` ve `flagcdn` uçlarının varlığı, 
 
 ---
 
+## Dağıtım Hazırlığı
+
+Vercel'e çıkmadan önce yapılan hazırlık da ölçümle yürüdü; yapılandırma
+yazılmadan önce hedef ortamın gerçekten çalışacağı doğrulandı.
+
+**CORS'un üretimde çalışacağı önceden sınandı.** Kod yazmak yerine önce
+backend'e Vercel benzeri origin'lerle istek atıldı. Sonuç, belgedeki açık
+riskin kapandığını gösterdi: backend artık `Access-Control-Allow-Origin`
+gönderiyor ve `*.vercel.app` alt alan adlarının tamamını kabul ediyor —
+yani preview dağıtımları da çalışacak. Whitelist dışındaki bir origin'e
+(`https://kotu-site.example.com`) başlık dönmediği ayrıca doğrulandı; izin
+politikası açık değil, kısıtlı.
+
+**Üretim derlemesi gerçekten çalıştırıldı.** `npm run build` çıktısı
+`vite preview` ile, geliştirme sunucusu ve proxy olmadan servis edildi;
+canlı backend'e karşı tüm ekranlar açıldı. Bu sırada bir ölçüm hatası da
+yakalandı: ilk deneme `4173` portunda yapıldı ve ekran hata verdi. Sebep
+kodda değildi — o port backend whitelist'inde yoktu. Ölçüm whitelist'teki
+portta tekrarlandı ve uygulama sorunsuz çalıştı. **Hata mesajı olduğu gibi
+kabul edilip koda müdahale edilmedi**, önce sebebi ayrıştırıldı.
+
+**Boş ortam değişkenine karşı sağlamlaştırma.** `VITE_API_BASE` için
+`??` operatörü kullanılıyordu; bu, değişken Vercel'de **boş string** olarak
+tanımlanırsa varsayılana düşmez ve uygulama kırılırdı. `trim() ||` kontrolüne
+çevrildi ve sondaki eğik çizgi temizlemesi eklendi. Bu, üretimde gerçekleşmesi
+kolay ama fark edilmesi zor bir hata sınıfıydı.
+
+---
+
 ## İnsan Kararı Olarak Kalan Mimari Tercihler
 
 - **Para asla `Number` ile işlenmez.** `poolAmount`, `balance`, `amount` string gelir; `lib/money.ts` bunları `bigint` kuruşa çevirir. `Number` yalnızca `Intl` ile biçimlendirme anında kullanılır.
@@ -222,7 +253,7 @@ Aynı şekilde `neighbours`, `projection` ve `flagcdn` uçlarının varlığı, 
 Doğrulama disiplininin bir parçası da, kapatılmayanı açıkça söylemektir:
 
 - **Mobil düzen gerçek cihazda görsel olarak doğrulanmadı.** Kırılım noktalarının derlenmiş CSS'te üretildiği doğrulandı, ancak dar ekranda göz kontrolü yapılamadı (tarayıcı eklentisi pencereyi boyutlandıramadı).
-- **Backend CORS başlığı göndermiyor.** API `Access-Control-Allow-Credentials: true` gönderirken `Access-Control-Allow-Origin` göndermiyor; bu haliyle `curl` çalışır ama tarayıcı tüm istekleri bloklar. Proxy geliştirici kararıyla kaldırıldığı için bu, backend'de çözülmesi gereken açık bir maddedir.
+- ~~**Backend CORS başlığı göndermiyor.**~~ **Kapatıldı.** Backend güncellendi; `Access-Control-Allow-Origin` artık gönderiliyor ve `localhost:5173` ile `*.vercel.app` origin'lerine izin veriliyor. Whitelist dışına başlık gönderilmiyor. Üretim derlemesi proxy'siz olarak canlı backend'e karşı çalıştırılıp doğrulandı.
 - ~~**"Ülkem" sekmesi yalnızca ilk 100'ü kapsar.**~~ **Kapatıldı.** Backend'e `country` parametresi eklendi; sıralama artık sunucuda, ülkedeki tüm oyuncular üzerinde yapılıyor ve sıra numaraları ülke içinde 1'den başlıyor.
 - **Otomatik test yok.** Doğrulama derleme, canlı API ölçümü ve tarayıcı kontrolüyle yapıldı; birim/bileşen testi yazılmadı.
 - **Veri artık canlı tazelenmiyor.** Polling geliştirici kararıyla kaldırıldı. Sıralama değiştiğinde ekran kendiliğinden güncellenmez; kullanıcı yenile düğmesine basmalıdır. Ağ trafiği karşılığında canlılıktan feragat edilmiştir.

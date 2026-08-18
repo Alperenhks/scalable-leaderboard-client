@@ -20,19 +20,39 @@ npm run dev      # http://localhost:5173
 İstemci doğrudan backend'e bağlanır:
 `https://scalable-leaderboard-engine.onrender.com/api`
 
-Farklı bir ortama bağlanmak için:
+Farklı bir ortama bağlanmak için `VITE_API_BASE` ver:
 
 ```bash
 VITE_API_BASE=https://baska-ortam.example.com/api npm run build
 ```
 
-> **Backend'de gereken CORS ayarı:** API'nin `Access-Control-Allow-Origin`
-> göndermesi gerekir. Göndermezse tarayıcı tüm istekleri bloklar — curl ile
-> çalışır ama tarayıcıda çalışmaz. NestJS tarafında:
->
-> ```ts
-> app.enableCors({ origin: true, credentials: true });
-> ```
+Değişken tanımsız ya da boş bırakılırsa üretim backend'ine düşer.
+
+> **CORS:** Backend `Access-Control-Allow-Origin` başlığını gönderiyor ve
+> `localhost:5173` ile `*.vercel.app` origin'lerine izin veriyor. Whitelist
+> dışındaki origin'lere başlık gönderilmiyor (bilinçli kısıtlama).
+> Farklı bir port ya da alan adından yayın yapacaksan backend whitelist'ine
+> eklenmesi gerekir — örneğin `vite preview` varsayılan portu 4173 listede
+> değildir.
+
+## Vercel'e dağıtım
+
+Depo Vercel'e bağlandığında ek yapılandırma gerekmez; `vercel.json` framework,
+derleme komutu ve çıktı dizinini tanımlar.
+
+1. Vercel'de **New Project** → bu depoyu içe aktar.
+2. Framework otomatik **Vite** algılanır (`vercel.json` bunu sabitler).
+3. Environment Variables **isteğe bağlıdır** — boş bırakılırsa üretim
+   backend'i kullanılır. Farklı bir backend için:
+   `VITE_API_BASE = https://.../api`
+4. Deploy.
+
+`*.vercel.app` alan adları backend CORS whitelist'inde olduğu için preview
+dağıtımları da çalışır. Özel bir alan adı bağlarsan backend'e eklenmesi gerekir.
+
+`VITE_` öneki olmayan değişkenler istemci paketine dahil edilmez. Bu paket
+tamamen istemci tarafında çalışır; **gizli bilgi (API anahtarı, secret)
+konulmamalıdır** — derleme anında paketin içine gömülür ve herkese görünür.
 
 ## Ekranlar
 
