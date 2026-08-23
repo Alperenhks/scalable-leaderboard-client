@@ -71,6 +71,7 @@ denenebilir:
 | Ortalama oyuncu | ~2476 | İlk 100 dışı, derin sıra |
 | İlk 100 dışı | 121 | **Asıl senaryo:** kopukluk göstergesi + 6 kayıt |
 | Skoru olmayan | `null` | Boş tablo değil, "Skor Gönder" ekranı |
+| Geçmiş sezon kazananı | değişken | Ödül geçmişi dolu — dağıtımın kanıtı |
 
 ## Kararlar
 
@@ -123,6 +124,50 @@ Aynı oyuncu her zaman aynı rozeti alır.
 
 **`rank: null` ≠ `0`.** Sıralamada olmayan oyuncuya boş tablo değil, skor
 gönderme ekranı gösterilir.
+
+**Satır ayrıntısı hover değil, dokunmayla açılır.** Ödül sütunu dar ekranda
+gizleniyordu; tooltip mobilde `hover` olmadığı için bilgiyi tamamen görünmez
+kılardı. Satırın kendisi bir `<button>`: dokununca skor, öndekine fark ve
+sezon sonu ödülü açılır. `aria-expanded` ile klavyeden de erişilir.
+
+**Skor barı her satırda görünür.** İlk 100'de skorlar 1,18 kat aralıktadır;
+bunu rakam değil bar anlatır. Referans listenin kendi en yüksek skorudur —
+"çevrem" penceresi derin sıralardan başladığında liderin skoruna göre çizilen
+bar bütün satırları düz bir çizgiye indirirdi.
+
+**Persona seçici mobilde alttan açılır.** Masaüstünde sağ üstte panel,
+mobilde tam genişlikte sayfa; dokunma hedefleri parmak boyutunda ve her
+seçeneğin altında o personada ne görüleceğini söyleyen bir cümle var.
+Radix `dropdown-menu` bağımlılığı kalktı: paket 334 KB → 278 KB.
+
+**Eşit puan görünür işaretlenir.** Sunucu aynı puanlı oyunculara aynı sırayı
+verir (rekabet sıralaması: iki oyuncu 54. ise sonraki 56.'dır). Listede aynı
+sayıyı iki kez görmek hata gibi okunacağı için, paylaşılan sıranın madalyasına
+`=` rozeti eklenir ve `aria-label` bunu "eşit puanla paylaşılıyor" olarak
+okur. Tespit `LeaderboardList` içinde yapılır — hangi sıraların birden çok
+kez geçtiğine bakılır — dolayısıyla ilk 100 listesi de çevre penceresi de
+aynı davranışı ücretsiz alır.
+
+**Kendi satırı `userId` ile bulunur, sıra ile değil.** Beraberlikte aynı
+sırayı birden çok oyuncu paylaşır; sıra karşılaştırması hepsini birden "sen"
+olarak işaretlerdi.
+
+**Kart `identify` yanıtıyla çizilir, `/me` beklenmez.** Yetkili uçlar token
+olmadan 401 döndüğü için `enabled: ready` ile korunuyorlar; bu da açılışta
+`identify → /me` zincirinin **seri** ilerlemesi demekti. Ölçüldü: tablo
+267 ms'de gelirken kart 573 ms'yi buluyor, yani 306 ms sonra düşüyordu.
+`identify` zaten sıra, skor ve ülkeyi döndürdüğü için kart token gelir gelmez
+çiziliyor (`cardMe`), `/me` tamamlandığında kendiliğinden yerini alıyor —
+**527 ms → 375 ms**. Ek istek yok; yalnızca eldeki yanıt kullanıldı.
+
+**Kart yüklenirken gerçek ölçülerinde iskelet çizer.** Boş bırakılsaydı tablo
+yukarı kayar, veri gelince geri zıplardı. İskelet kutunun yerini baştan ayırır.
+
+**Geçmiş ödüller kartın içinde.** "Bu sezon neredeyim" ve "daha önce ne
+kazandım" aynı yerde cevaplanır. Varsayılan kapalı, başlıkta kayıt sayısı ve
+toplam kazanç görünür; kaydı olmayan oyuncuda bölüm hiç çizilmez. Ana sekmeler
+(İLK 100 / ÇEVREM / ÜLKEM) tabloya ait kaldığı için iki sekme grubu üst üste
+gelmez.
 
 ## Yapı
 

@@ -108,7 +108,14 @@ export interface MeRewardsResponse {
   rewards: RewardHistoryItem[];
 }
 
-export type DemoMode = 'top' | 'contender' | 'mid' | 'outside' | 'unranked';
+export type DemoMode =
+  | 'top'
+  | 'contender'
+  | 'mid'
+  | 'outside'
+  | 'unranked'
+  /** Geçmiş sezondan ödülü olan oyuncu — dağıtımın kanıtı onun ekranında. */
+  | 'veteran';
 
 export interface IdentifyResponse {
   token: string;
@@ -117,6 +124,8 @@ export interface IdentifyResponse {
   roles: string[];
   rank: number | null;
   score: number;
+  /** Kartın `/me` beklemeden çizilebilmesi için identify de ülkeyi döndürür. */
+  country: CountryCode;
   seasonId: string;
 }
 

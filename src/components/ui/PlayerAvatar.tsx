@@ -2,7 +2,8 @@ import { cn } from '@/lib/utils';
 
 interface Props {
   userId: string;
-  username: string;
+  /** Sözleşmede zorunlu, ama savunmacı okunur — gerekçe `initials`'ta. */
+  username?: string | null;
   className?: string;
 }
 
@@ -28,8 +29,17 @@ function hash(seed: string): number {
   return Math.abs(h);
 }
 
-/** "demo_turbo_falcon_220" → "TF" */
-function initials(username: string): string {
+/**
+ * "demo_turbo_falcon_220" → "TF"
+ *
+ * Ad boş gelebilir: sıralamada olup Postgres'te bulunamayan oyuncu için
+ * sunucu `"unknown"` döndürür ve yeni bir uç eklendiğinde alan hiç
+ * gelmeyebilir. Avatar bir süs öğesidir — eksik bir ad yüzünden tüm tabloyu
+ * çökertmesi kabul edilemez, bu yüzden tip zorunlu olsa da savunmacı okunur.
+ */
+function initials(username: string | null | undefined): string {
+  if (!username) return '?';
+
   const words = username.split(/[_\s-]+/).filter((w) => /^[a-zA-Z]/.test(w));
   const picked = words.filter((w) => w.toLowerCase() !== 'demo').slice(0, 2);
   const source = picked.length > 0 ? picked : words.slice(0, 2);

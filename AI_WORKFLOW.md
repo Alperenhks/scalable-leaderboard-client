@@ -204,6 +204,36 @@ Yenile düğmesine basıldı → 6 istek
 
 Aynı şekilde `neighbours`, `projection` ve `flagcdn` uçlarının varlığı, koda dokunulmadan önce `curl` ile doğrulandı — geliştiricinin verdiği bilgi doğruydu, ama doğrulanmadan kod yazılmadı.
 
+### Gözlem doğru, ilk teşhis yanlış: "sen" kartı geç geliyor
+
+Geliştirici tabloyu hızlı bulduğunu ama üstündeki kendi bilgilerinin durduğu kartın geriden düştüğünü söyledi. Gözlem doğruydu; akla ilk gelen açıklama — "kartın ucu yavaş" — yanlıştı. Uçlar tek tek ölçüldü:
+
+```
+/leaderboard        267 ms
+/me                 263 ms
+/rewards/projection 233 ms
+```
+
+Hiçbiri yavaş değildi. Sorun **zincirin serileşmesiydi**: yetkili uçlar `enabled: ready` ile korunuyor (token'sız çağrılırsa 401 dönerler), dolayısıyla açılışta `identify` bitmeden hiçbiri başlayamıyordu.
+
+```
+Tablo  /leaderboard        267 ms   ← token beklemiyor
+Kart   identify -> /me     573 ms   ← 306 ms geriden
+```
+
+Teşhis netleşince çözüm de değişti. Hazır görünen seçenek `enabled: ready`'yi kaldırmaktı; istekler paralelleşirdi ama **hepsi 401 alırdı** — çalışmayan bir çözüm. İkinci seçenek yeni bir uç eklemekti; zinciri kısaltmaz, uzatırdı.
+
+Uygulanan çözüm **var olan yanıtı kullanmak** oldu: `identify` zaten sıra ve skoru döndürüyordu, eksik olan tek alan `country`'ydi ve backend'de mevcut sorguya `select` alanı olarak eklendi — ek gidiş-dönüş yok. Kart artık token gelir gelmez çiziliyor, `/me` tamamlandığında kendiliğinden yerini alıyor.
+
+```
+ÖNCE : 536, 546, 499 ms → 527 ms
+SONRA: 370, 367, 387 ms → 375 ms   (%29)
+```
+
+Ölçüm üç tur, yerel sunucu — ağ payı sabit kalsın diye. Ders şu: **ölçüm yapılmasaydı muhtemelen `/me` ucu optimize edilmeye çalışılırdı ve hiçbir şey değişmezdi.**
+
+Bu değişiklik bir de hata doğurdu ve o hatanın kendisi öğreticiydi: kartın verisi `identity`'ye bağlanınca, tarayıcıda önceki oturumdan token kalan kullanıcıda `identity` boş kalıyor ve kart *"Pistte henüz uçağın yok"* yazıyordu — **yanlış bilgi**. Eksik veriyle yarım bir kart çizmek yerine iskelet gösterilecek şekilde düzeltildi. Yavaş bir ekran kötüdür; yanlış bir ekran daha kötüdür.
+
 ---
 
 ## İnsan Kararı Olarak Kalan Mimari Tercihler
@@ -214,6 +244,10 @@ Aynı şekilde `neighbours`, `projection` ve `flagcdn` uçlarının varlığı, 
 - **`key` olarak `userId`, index değil.** Sıralama değiştiğinde React tüm listeyi yeniden çizmez.
 - **Kendi satırı `isCurrentUser` ile bulunur.** `neighbours` dizisinin uzunluğu 3–6 arası değişir (1. sırada üstte, son sırada altta kimse yoktur); index'e göre arama yanlış sonuç verir.
 - **`rank: null` ≠ `0`.** Sıralamada olmayan oyuncuya boş tablo değil, skor gönderme ekranı gösterilir.
+- **Ayrıntı hover'ın arkasına konmadı.** Satırdaki ödül sütunu dar ekranda gizleniyordu ve ilk akla gelen çözüm tooltip'ti. Mobilde `hover` yoktur — case ise uygulamanın *"both PC and mobile"* üzerinde test edileceğini söylüyor, dolayısıyla tooltip bilgiyi telefonda tamamen görünmez kılardı. Ayrıntı bunun yerine **dokunmayla açılan** bir bölüme konuldu: aynı etkileşim iki platformda da çalışır, `<button>` + `aria-expanded` sayesinde klavyeyle de erişilir. Gizlenen ödül bilgisi kaybolmadı, talep üzerine gelir hale geldi.
+- **Skor barı her satırda, her ekranda görünür.** İlk 100'de skorlar birbirine çok yakındır (canlı veride 4. ile 100. arasında 1,18 kat fark); rakamlar bunu anlatmaz, bar anlatır. Referans olarak sabit bir değer değil **listenin kendi en yüksek skoru** alınır: "çevrem" penceresi 500. sıradan başlayabilir ve orada liderin skoruna göre çizilen bar bütün satırları görünmez bir çizgiye indirirdi.
+- **Persona seçici mobilde açılır menü değil, alttan açılan sayfadır.** Masaüstünde menü yeterliydi; mobilde tetikleyici buton `max-w-[5.5rem]` ile kırpıldığı için seçili personanın adı okunmuyor, ipuçları da dar ekranda satır sonuna sıkışıyordu — oysa jürinin ilk dokunacağı yer burasıdır. Dokunma hedefleri parmak boyutuna çıkarıldı (`min-h-[3.25rem]`) ve her seçeneğin altına o personada **ne görüleceğini** söyleyen bir cümle eklendi; seçici bir ad listesi olmaktan çıkıp senaryo menüsüne dönüştü. İki ayrı bileşen yazmak yerine tek bileşende iki yerleşim tutuldu: ayrı yazmak, davranışın zamanla ayrışması demekti. Yan etki olarak Radix `dropdown-menu` bağımlılığı düştü ve paket **334 KB'tan 278 KB'a** indi.
+- **Avatar eksik adı tolere eder.** `initials(username)` `null` geldiğinde `.split()` çağrısında patlıyor ve **tüm tabloyu** çökertiyordu. Sunucu, sıralamada olup Postgres'te bulunamayan oyuncu için `"unknown"` döndürebiliyor; tip zorunlu olsa da alan savunmacı okunur. Avatar bir süs öğesidir — eksik bir ad yüzünden ekranın tamamının kaybolması kabul edilemez.
 
 ---
 

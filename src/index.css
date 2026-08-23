@@ -153,3 +153,19 @@
 @utility tnum {
   font-variant-numeric: tabular-nums;
 }
+
+/*
+ * Alttan açılan panel için giriş hareketi.
+ *
+ * Panelin nereden geldiğini gösterir: aniden beliren bir katman, kullanıcının
+ * hangi bağlamda olduğunu kaybettirir. `prefers-reduced-motion` tercihinde
+ * bileşen animasyonu kendisi kapatır.
+ */
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}

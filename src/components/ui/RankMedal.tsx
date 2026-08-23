@@ -3,10 +3,12 @@ import { cn } from '@/lib/utils';
 interface Props {
   rank: number;
   className?: string;
+  /** Bu sırayı eşit puanlı başka oyuncular da paylaşıyor. */
+  isTied?: boolean;
 }
 
 /** İlk üç sıra kendi madalya rengini alır; gerisi sade kalır. */
-export function RankMedal({ rank, className }: Props) {
+export function RankMedal({ rank, className, isTied = false }: Props) {
   const tone =
     rank === 1
       ? 'from-coin-1 to-coin-2 border-amount text-[#5a2d0c]'
@@ -17,16 +19,32 @@ export function RankMedal({ rank, className }: Props) {
           : 'from-[#ffeec4] to-[#f3cf8e] border-[#c0871f] text-cocoa';
 
   return (
-    <span
-      aria-label={`${rank}. sıra`}
-      className={cn(
-        'inline-flex size-8 shrink-0 items-center justify-center rounded-full border-[3px] bg-gradient-to-b font-extrabold shadow-[inset_0_2px_0_rgb(255_255_255/0.5)]',
-        rank > 99 ? 'text-[11px]' : 'text-sm',
-        tone,
-        className,
+    <span className="relative shrink-0">
+      <span
+        aria-label={
+          isTied ? `${rank}. sıra, eşit puanla paylaşılıyor` : `${rank}. sıra`
+        }
+        className={cn(
+          'inline-flex size-8 items-center justify-center rounded-full border-[3px] bg-gradient-to-b font-extrabold shadow-[inset_0_2px_0_rgb(255_255_255/0.5)]',
+          rank > 99 ? 'text-[11px]' : 'text-sm',
+          tone,
+          className,
+        )}
+      >
+        {rank}
+      </span>
+
+      {/* Eşitlik rozeti: aynı sırayı iki kez görmek hata gibi okunmasın diye
+          sıranın paylaşıldığı satırda açıkça işaretlenir. */}
+      {isTied && (
+        <span
+          aria-hidden="true"
+          title="Eşit puan — sıra paylaşılıyor"
+          className="absolute -right-0.5 -top-0.5 inline-flex size-3.5 items-center justify-center rounded-full border-2 border-cream bg-cocoa text-[8px] font-extrabold leading-none text-cream"
+        >
+          =
+        </span>
       )}
-    >
-      {rank}
     </span>
   );
 }

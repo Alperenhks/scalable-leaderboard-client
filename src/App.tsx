@@ -8,12 +8,11 @@ import {
   getSeason,
   submitScore,
 } from '@/api/client';
-import type { DemoMode } from '@/api/types';
+import type { DemoMode, MeResponse } from '@/api/types';
 import { AroundWindow } from '@/components/leaderboard/AroundWindow';
 import { LeaderboardList } from '@/components/leaderboard/LeaderboardList';
 import { MyRankCard } from '@/components/player/MyRankCard';
 import { PlayerSwitcher } from '@/components/player/PlayerSwitcher';
-import { RewardHistory } from '@/components/player/RewardHistory';
 import { PrizeBreakdown } from '@/components/season/PrizeBreakdown';
 import { SeasonHeader } from '@/components/season/SeasonHeader';
 import { Button } from '@/components/ui/button';
@@ -78,10 +77,45 @@ export default function App() {
 
   const prizes = useMemo(() => buildPrizeTable(projection.data), [projection.data]);
 
+  /**
+   * Kartın verisi: `/me` geldiyse o, gelmediyse `identify` yanıtı.
+   *
+   * Açılış zinciri seri ilerliyordu — `identify` bitmeden yetkili uçlar
+   * başlamıyor, dolayısıyla kart `identify + me` kadar bekliyordu. Ölçüldü:
+   * kart 573 ms, tablo 267 ms; aradaki 306 ms tamamen bu bekleme.
+   *
+   * `identify` zaten sıra, skor ve ülkeyi döndürdüğü için kart token gelir
+   * gelmez çizilebilir. `/me` tamamlandığında bakiye gibi ek alanlarla
+   * kendiliğinden yerini alır — ek istek yok, yalnızca eldeki veri kullanılır.
+   */
+  const cardMe = useMemo<MeResponse | null>(() => {
+    if (me.data) return me.data;
+
+    // `identity` yalnızca bu oturumda kimlik alındıysa doludur. Tarayıcıda
+    // önceki oturumdan token kaldıysa `useSession` yeniden `identify`
+    // çağırmaz ve bu alan boş kalır — o durumda `/me` beklenir ve kart
+    // iskelet gösterir. Eksik alanlarla yarım bir kart çizmek, "sıralamada
+    // değilsin" gibi YANLIŞ bir bilgi göstermek olurdu.
+    if (!identity?.username) return null;
+
+    return {
+      userId: identity.userId,
+      username: identity.username,
+      country: identity.country ?? null,
+      seasonId: identity.seasonId,
+      rank: identity.rank,
+      score: identity.score,
+      // Bakiye ve son ödül yalnızca `/me` yolundan gelir; kart bunları
+      // göstermiyor, dolayısıyla eksik olmaları çizimi etkilemez.
+      balance: '0.00',
+      lastReward: null,
+    };
+  }, [me.data, identity]);
+
   // Ülke sıralaması sunucudan gelir: sıra numaraları ülke içinde 1'den başlar,
   // yani globalde 2476. olan oyuncu kendi ülkesinde 129. olarak görünür.
   // Sekme açılmadan istek atılmaz.
-  const myCountry = me.data?.country ?? null;
+  const myCountry = cardMe?.country ?? null;
   const countryDeps = useMemo(() => [myCountry, epoch], [myCountry, epoch]);
 
   const countryBoard = useResource(
@@ -133,8 +167,6 @@ export default function App() {
     }
   }, [refetchAll]);
 
-  const hasRewards = (rewards.data?.count ?? 0) > 0;
-
   return (
     <div className="mx-auto w-full max-w-5xl px-3 py-6 sm:px-4 sm:py-8">
       <header className="mb-3 flex items-center justify-between gap-3">
@@ -166,9 +198,10 @@ export default function App() {
         <GamePanel title="Liderlik Tablosu" icon="🛫">
           <div className="mb-3">
             <MyRankCard
-              me={me.data}
+              me={cardMe}
               around={around.data}
               projectionMe={projection.data?.me ?? null}
+              rewards={rewards.data}
             />
           </div>
 
@@ -288,11 +321,6 @@ export default function App() {
             <PrizeBreakdown season={season.data} projection={projection.data} />
           </GamePanel>
 
-          {hasRewards && (
-            <GamePanel title="Geçmişin" icon="🧳">
-              <RewardHistory rewards={rewards.data} />
-            </GamePanel>
-          )}
         </div>
       </div>
 
